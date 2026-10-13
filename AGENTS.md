@@ -15,3 +15,4 @@
 - Catalog tables are written only by the service role during sync; users read them via RLS — no user can alter official data.
 - All app pages live under `src/routes/_authenticated/`; auth pages are public — session lives in the browser.
 - Never store mock/seed tenders; only real synced records — production requirement.
+- Public access screens share AuthShell and scoped auth CSS tokens; signup duplicate detection uses only the auth response, never a privileged email lookup — keeps presentation consistent without exposing an account directory.
