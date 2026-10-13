@@ -121,9 +121,9 @@ function ProfilePage() {
             <Button type="button" variant="outline" size="sm" onClick={() => up("experience", [...f.experience, { specialty: "", amount: null, currency: "PEN" }])}><Plus className="h-4 w-4" />Agregar experiencia</Button>
           </fieldset>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           {([["staff", "Personal clave"], ["certifications", "Certificaciones"], ["availability", "Disponibilidad"], ["restrictions", "Restricciones"]] as const).map(([k, l]) => (
-            <div key={k} className="min-w-0 space-y-1.5"><Label htmlFor={k}>{l}</Label><Textarea id={k} rows={12} className="min-h-[240px] resize-y" value={(f[k] as string) ?? ""} onChange={(e) => up(k, e.target.value)} /></div>
+            <div key={k} className="min-w-0 space-y-1.5"><Label htmlFor={k}>{l}</Label><Textarea id={k} rows={12} className="min-h-[360px] resize-y md:min-h-0" value={(f[k] as string) ?? ""} onChange={(e) => up(k, e.target.value)} /></div>
           ))}
         </div>
       </section>
