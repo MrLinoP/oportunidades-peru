@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedGuardadasRouteImport } from './routes/_authenticated/guardadas'
+import { Route as AuthenticatedMiEmpresaRouteImport } from './routes/_authenticated/mi-empresa'
 import { Route as AuthenticatedOportunidadesRouteImport } from './routes/_authenticated/oportunidades'
 import { Route as AuthenticatedOportunidadesIndexRouteImport } from './routes/_authenticated/oportunidades.index'
 import { Route as AuthenticatedOportunidadesIdRouteImport } from './routes/_authenticated/oportunidades.$id'
@@ -42,6 +43,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const AuthenticatedGuardadasRoute = AuthenticatedGuardadasRouteImport.update({
   id: '/guardadas',
   path: '/guardadas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMiEmpresaRoute = AuthenticatedMiEmpresaRouteImport.update({
+  id: '/mi-empresa',
+  path: '/mi-empresa',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOportunidadesRoute =
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/guardadas': typeof AuthenticatedGuardadasRoute
+  '/mi-empresa': typeof AuthenticatedMiEmpresaRoute
   '/oportunidades': typeof AuthenticatedOportunidadesRouteWithChildren
   '/oportunidades/$id': typeof AuthenticatedOportunidadesIdRoute
   '/api/public/sync': typeof ApiPublicSyncRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/guardadas': typeof AuthenticatedGuardadasRoute
+  '/mi-empresa': typeof AuthenticatedMiEmpresaRoute
   '/oportunidades/$id': typeof AuthenticatedOportunidadesIdRoute
   '/api/public/sync': typeof ApiPublicSyncRoute
   '/oportunidades': typeof AuthenticatedOportunidadesIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/guardadas': typeof AuthenticatedGuardadasRoute
+  '/_authenticated/mi-empresa': typeof AuthenticatedMiEmpresaRoute
   '/_authenticated/oportunidades': typeof AuthenticatedOportunidadesRouteWithChildren
   '/_authenticated/oportunidades/$id': typeof AuthenticatedOportunidadesIdRoute
   '/api/public/sync': typeof ApiPublicSyncRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/guardadas'
+    | '/mi-empresa'
     | '/oportunidades'
     | '/oportunidades/$id'
     | '/api/public/sync'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/guardadas'
+    | '/mi-empresa'
     | '/oportunidades/$id'
     | '/api/public/sync'
     | '/oportunidades'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/guardadas'
+    | '/_authenticated/mi-empresa'
     | '/_authenticated/oportunidades'
     | '/_authenticated/oportunidades/$id'
     | '/api/public/sync'
@@ -187,6 +199,13 @@ declare module '@tanstack/react-router' {
       path: '/guardadas'
       fullPath: '/guardadas'
       preLoaderRoute: typeof AuthenticatedGuardadasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mi-empresa': {
+      id: '/_authenticated/mi-empresa'
+      path: '/mi-empresa'
+      fullPath: '/mi-empresa'
+      preLoaderRoute: typeof AuthenticatedMiEmpresaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/oportunidades': {
@@ -245,11 +264,13 @@ const AuthenticatedOportunidadesRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuardadasRoute: typeof AuthenticatedGuardadasRoute
+  AuthenticatedMiEmpresaRoute: typeof AuthenticatedMiEmpresaRoute
   AuthenticatedOportunidadesRoute: typeof AuthenticatedOportunidadesRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuardadasRoute: AuthenticatedGuardadasRoute,
+  AuthenticatedMiEmpresaRoute: AuthenticatedMiEmpresaRoute,
   AuthenticatedOportunidadesRoute: AuthenticatedOportunidadesRouteWithChildren,
 }
 
