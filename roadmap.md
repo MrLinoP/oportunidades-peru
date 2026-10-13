@@ -1,6 +1,6 @@
 # Roadmap
 - [x] Formulario "Mi empresa" centrado y a todo el ancho del contenido (margen 1 rem en escritorio, 0,5 rem en celular), secciones con columnas adaptables; verificado en 1440, 1920 y 390 px
-- [x] Textareas de Personal clave/Certificaciones/Disponibilidad/Restricciones se dimensionan solos al contenido y comparten la misma altura (sin redimension manual); verificado con sesión real
+- [x] Textareas de Personal clave/Certificaciones/Disponibilidad/Restricciones con alto base mayor (12 líneas, 360 px en celular), los cuatro iguales y el arrastre para agrandar activo; verificado con sesión real en 390–1920 px
 - [x] Mostrar S/ en toda la plataforma, moneda junto a montos no informados y campo Moneda en el detalle; verificado con registros reales en soles y dólares y 15 pruebas aprobadas.
 - [x] Sugerencias ligeras con el mismo modelo de OpenAI, adaptadas a Mi empresa y mostradas en el listado existente (verificadas con sesión real; filtros y regreso al catálogo conservados)
 - [x] Unificar paleta verde del acceso y animaciones suaves en toda la plataforma (verificado con sesión en oportunidades, detalle, Mi empresa y Guardadas)
