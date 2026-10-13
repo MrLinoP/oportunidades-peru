@@ -15,7 +15,7 @@ Descubre contrataciones vigentes del Estado peruano (SEACE), fíltralas, guárda
 - Rubro = segmento CUBSO original (2 primeros dígitos).
 - Montos sin conversión de moneda; "---" se guarda como no informado.
 - Catálogo visible solo a usuarios autenticados (lectura); perfil, guardadas y análisis privados por RLS.
-- Pendiente: hito 4 (análisis con OpenAI), cron programado, despliegue en Vercel.
+- Sincronización automática diaria a las 00:00 (Lima) desde la versión publicada. Pendiente: despliegue en Vercel.
 
 ## Análisis (Hito 4)
 - Usa OpenAI directo con `OPENAI_API_KEY` (modelo `OPENAI_MODEL`, por defecto gpt-4.1-mini).

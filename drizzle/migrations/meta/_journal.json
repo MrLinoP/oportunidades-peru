@@ -15,6 +15,13 @@
       "when": 1791853344212,
       "tag": "0001_cubso_segments",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791857295955,
+      "tag": "0002_migration",
+      "breakpoints": true
     }
   ]
 }
