@@ -1,9 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { parseAmount, parseSeaceDate, tenderStatus, isValidRucSyntax, isStale } from "./tender-rules";
+import { parseAmount, parseSeaceDate, tenderStatus, isValidRucSyntax, isStale, suggestionFacts, validSuggestionIds } from "./tender-rules";
 
 const now = new Date("2026-10-13T12:00:00Z");
 
 describe("tender rules", () => {
+  it("suggestions use title, object, regions and item names, never bases", () => {
+    const facts = suggestionFacts({ id: "real", title: "Supervisión de puente", object_type: "Consultoría de Obra", regions: ["Junín"], tender_items: [{ description: "Supervisión técnica", cubso_label: null, region: "Junín" }] });
+    expect(facts).toEqual({ id: "real", titulo: "Supervisión de puente", objeto: "Consultoría de Obra", regiones: ["Junín"], items: [{ nombre: "Supervisión técnica", region: "Junín" }] });
+  });
+  it("suggestions retain only real candidate ids without duplicates", () => {
+    expect(validSuggestionIds(["real", "invented", "real"], [{ id: "real" }])).toEqual(["real"]);
+  });
   it("missing amount is null, never zero", () => {
     expect(parseAmount("---")).toBeNull();
     expect(parseAmount("41706213.29")).toBe(41706213.29);
