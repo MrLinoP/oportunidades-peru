@@ -26,8 +26,8 @@ function AppLayout() {
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2">Saltar al contenido</a>
       <header className="border-b bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Link to="/oportunidades" className="text-lg font-semibold tracking-tight">Oportunidades Perú</Link>
-          <nav aria-label="Principal" className="flex flex-1 flex-wrap gap-1">
+          <Link to="/oportunidades" className="flex-1 text-lg font-semibold tracking-tight md:flex-none">Oportunidades Perú</Link>
+          <nav aria-label="Principal" className="order-last flex w-full flex-wrap gap-1 md:order-none md:w-auto md:flex-1">
             {nav.map((n) => (
               <Link key={n.to} to={n.to}
                 className="rounded-md px-3 py-1.5 text-sm font-medium text-primary-foreground/80 hover:bg-primary-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
