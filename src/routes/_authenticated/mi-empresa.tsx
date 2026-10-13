@@ -39,7 +39,6 @@ function ProfilePage() {
   const [f, setF] = useState<ProfileInput>(empty);
   const [kw, setKw] = useState("");
   const [busy, setBusy] = useState(false);
-  const longFieldRefs = useRef<Partial<Record<"staff" | "certifications" | "availability" | "restrictions", HTMLTextAreaElement | null>>>({});
   useEffect(() => {
     if (data) {
       setF({ ...empty, ...Object.fromEntries(Object.entries(data).filter(([k]) => k in empty)) } as ProfileInput);
