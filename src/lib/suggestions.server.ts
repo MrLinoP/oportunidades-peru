@@ -59,10 +59,20 @@ async function suggestBatch(candidates: Candidate[], profile: Profile): Promise<
 }
 
 export async function runSuggestions(candidates: Candidate[], profile: Profile): Promise<string[]> {
+  if (!candidates.length) return [];
+  // Establish the company's sellable objects before matching individual titles.
+  const categories: Candidate[] = [
+    { id: "Bien", title: "Venta y suministro de bienes, materiales, vehículos o equipos", object_type: "Bien", regions: [], tender_items: [] },
+    { id: "Servicio", title: "Prestación de servicios distintos de consultoría de obras", object_type: "Servicio", regions: [], tender_items: [] },
+    { id: "Obra", title: "Ejecución y construcción de obras como contratista constructor (no supervisión)", object_type: "Obra", regions: [], tender_items: [] },
+    { id: "Consultoría de Obra", title: "Consultoría de obras: supervisión de obras o elaboración de expedientes técnicos", object_type: "Consultoría de Obra", regions: [], tender_items: [] },
+  ];
+  const objects = new Set(await suggestBatch(categories, profile));
+  const eligible = candidates.filter((t) => !t.object_type || objects.has(t.object_type));
   // Sequential batches avoid rate spikes and cover every candidate, not only page one.
   const selected: string[] = [];
-  for (let i = 0; i < candidates.length; i += 75) {
-    selected.push(...await suggestBatch(candidates.slice(i, i + 75), profile));
+  for (let i = 0; i < eligible.length; i += 50) {
+    selected.push(...await suggestBatch(eligible.slice(i, i + 50), profile));
   }
   return validSuggestionIds(selected, candidates);
 }
