@@ -39,7 +39,8 @@ async function getJson<T>(url: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-export type SeaceRow = Record<string, any> & { idProcedimiento: number; ubigeo: number | null };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SeaceRow = any;
 
 export async function fetchAllRows(): Promise<SeaceRow[]> {
   return getJson<SeaceRow[]>(`${LIST}/0/0/0/0`);
@@ -54,7 +55,7 @@ export async function fetchUbigeoMap(): Promise<Map<number, string>> {
       codes.slice(i, i + 4).map(async (c) => {
         try {
           const rows = await getJson<SeaceRow[]>(`${LIST}/0/${c}/0/0`);
-          for (const r of rows) if (r.ubigeo != null) map.set(r.ubigeo, DEPARTMENTS[c]);
+          for (const r of rows) if (r.ubigeo != null) map.set(r.ubigeo, DEPARTMENTS[c]!);
         } catch { /* partial map is acceptable; unmapped => No informado */ }
       }),
     );
@@ -84,7 +85,7 @@ export function stableStringify(v: unknown): string {
 }
 
 export function buildTender(rows: SeaceRow[], ubigeo: Map<number, string>) {
-  const r = rows[0];
+  const r = rows[0]!;
   const close = parseSeaceDate(r.fechaPresentacionPropuestas);
   const regions = [...new Set(rows.map((x) => (x.ubigeo != null ? ubigeo.get(x.ubigeo) : undefined) ?? "No informado"))];
   const codes = rows.map((x) => x.codCubso).filter(Boolean) as string[];

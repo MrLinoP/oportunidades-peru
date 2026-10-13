@@ -30,7 +30,7 @@ function ResetPage() {
         e.preventDefault(); setBusy(true);
         const { error } = await supabase.auth.updateUser({ password });
         setBusy(false);
-        if (error) return toast.error("El enlace expiró o no es válido. Solicita uno nuevo.");
+        if (error) { toast.error("El enlace expiró o no es válido. Solicita uno nuevo."); return; }
         toast.success("Contraseña actualizada");
         navigate({ to: "/oportunidades" });
       }}>

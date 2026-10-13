@@ -53,7 +53,7 @@ function ProfilePage() {
   return (
     <form className="max-w-3xl space-y-6" onSubmit={async (e) => {
       e.preventDefault();
-      if (rucBad) return toast.error("Revisa el RUC: debe tener 11 dígitos");
+      if (rucBad) { toast.error("Revisa el RUC: debe tener 11 dígitos"); return; }
       setBusy(true);
       try {
         await save({ data: { ...f, ruc: f.ruc || null, keywords: kw.split(",").map((s) => s.trim()).filter(Boolean) } });
