@@ -5,7 +5,8 @@ import { useState } from "react";
 import { ArrowLeft, Download, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getTender } from "@/lib/tenders.functions";
+import { analyzeTender, getTender } from "@/lib/tenders.functions";
+import { toast } from "sonner";
 import { formatDate, formatMoney } from "@/lib/tender-rules";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
 
@@ -32,6 +33,20 @@ function DetailPage() {
   const fn = useServerFn(getTender);
   const qc = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const [tab, setTab] = useState("resumen");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const analyzeFn = useServerFn(analyzeTender);
+  async function analyze() {
+    setAnalyzing(true); setAnalyzeError(null); setTab("analisis");
+    try {
+      const a = await analyzeFn({ data: { tenderId: id } });
+      qc.setQueryData(["tender", id], (old: any) => old ? { ...old, analysis: a } : old);
+      qc.invalidateQueries({ queryKey: ["saved"] });
+      toast.success("Análisis listo");
+    } catch (e: any) { setAnalyzeError(e?.message ?? "No se pudo analizar"); }
+    finally { setAnalyzing(false); }
+  }
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["tender", id], queryFn: () => fn({ data: { id } }) });
 
   if (isLoading) return <p role="status">Cargando oportunidad…</p>;
@@ -50,7 +65,7 @@ function DetailPage() {
         <div className="flex flex-wrap gap-2">
           <Button asChild><a href={t.source_url ?? "https://prod4.seace.gob.pe/openegocio/#/buscar"} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" aria-hidden />Ver en fuente oficial</a></Button>
           <SaveButton tenderId={t.id} saved={data.saved} size="default" />
-          <Button variant="outline" disabled title="Disponible en la siguiente etapa (análisis con OpenAI)"><Sparkles className="h-4 w-4" aria-hidden />Analizar (próximamente)</Button>
+          <Button variant="secondary" disabled={analyzing} onClick={analyze}><Sparkles className={`h-4 w-4 ${analyzing ? "animate-pulse" : ""}`} aria-hidden />{analyzing ? "Analizando…" : data.analysis ? "Volver a analizar" : "Analizar"}</Button>
           <Button variant="ghost" disabled={refreshing} onClick={async () => {
             setRefreshing(true);
             const r = await fn({ data: { id, refresh: true } });
@@ -62,7 +77,7 @@ function DetailPage() {
         <p className="text-xs text-muted-foreground">En el portal oficial, busca por la nomenclatura <strong>{t.nomenclature}</strong>.</p>
       </header>
 
-      <Tabs defaultValue="resumen">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="resumen">Resumen</TabsTrigger>
           <TabsTrigger value="documentos">Documentos ({documents.length})</TabsTrigger>
@@ -124,11 +139,49 @@ function DetailPage() {
           </section>
         </TabsContent>
         <TabsContent value="analisis">
-          <section className="rounded-lg border bg-card p-5 text-sm">
-            {data.analysis ? <p>Último análisis: {formatDate(data.analysis.created_at)} · puntaje {data.analysis.score ?? "—"}</p> : <p className="text-muted-foreground">Aún no hay análisis. El análisis de las bases con OpenAI se habilita en la siguiente etapa.</p>}
-          </section>
+          <AnalysisPanel analysis={data.analysis} analyzing={analyzing} error={analyzeError} outdated={!!data.analysis && data.analysis.tender_version !== t.version} />
         </TabsContent>
       </Tabs>
     </article>
+  );
+}
+
+const REC: Record<string, string> = { participar: "Recomendado participar", evaluar: "Evaluar con cuidado", no_participar: "No recomendado" };
+const ST: Record<string, { label: string; cls: string }> = {
+  cumple: { label: "Cumple", cls: "bg-success/15 text-success" },
+  no_cumple: { label: "No cumple", cls: "bg-destructive/15 text-destructive" },
+  por_verificar: { label: "Por verificar", cls: "bg-warning/15 text-warning" },
+};
+
+function AnalysisPanel({ analysis, analyzing, error, outdated }: { analysis: any; analyzing: boolean; error: string | null; outdated: boolean }) {
+  const r = analysis?.result as any;
+  return (
+    <section className="space-y-4 rounded-lg border bg-card p-5 text-sm">
+      {analyzing && <p role="status">Leyendo las bases y comparando con tu perfil… puede tardar hasta un minuto.</p>}
+      {error && <p role="alert" className="text-destructive">{error}{/perfil/i.test(error) && <> — <Link to="/mi-empresa" className="underline">ir a Mi empresa</Link></>}</p>}
+      {!analysis && !analyzing && !error && <p className="text-muted-foreground">Aún no hay análisis. Pulsa «Analizar» para evaluar esta oportunidad frente a tu perfil.</p>}
+      {r && (
+        <>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="text-3xl font-semibold">{analysis.score}<span className="text-base text-muted-foreground">/100</span></div>
+            <div><p className="font-medium">{REC[r.recommendation] ?? r.recommendation}</p><p className="text-xs text-muted-foreground">Analizado el {formatDate(analysis.created_at)}{r.documents_used?.length ? ` · Bases leídas: ${r.documents_used.join(", ")}` : " · Sin bases en PDF, solo datos oficiales"}</p></div>
+          </div>
+          {outdated && <p role="status" className="font-medium text-warning">La oportunidad cambió desde este análisis. Conviene volver a analizar.</p>}
+          <p>{r.summary}</p>
+          {r.requirements?.length > 0 && (
+            <div><h3 className="mb-2 font-semibold">Requisitos y evidencia</h3>
+              <ul className="space-y-3">{r.requirements.map((q: any, i: number) => (
+                <li key={i} className="border-b pb-3 last:border-0">
+                  <div className="flex flex-wrap items-center gap-2"><span className={`rounded px-2 py-0.5 text-xs font-medium ${ST[q.status]?.cls ?? ""}`}>{ST[q.status]?.label ?? q.status}</span><span className="font-medium">{q.requirement}</span></div>
+                  <p className="mt-1 text-muted-foreground">{q.reason}</p>
+                  {q.evidence && <blockquote className="mt-1 border-l-2 pl-3 text-xs italic">“{q.evidence}” <span className="not-italic text-muted-foreground">— {q.source}</span></blockquote>}
+                </li>))}</ul>
+            </div>)}
+          {r.risks?.length > 0 && <div><h3 className="mb-1 font-semibold">Riesgos</h3><ul className="list-disc pl-5">{r.risks.map((x: string, i: number) => <li key={i}>{x}</li>)}</ul></div>}
+          {r.missing_info?.length > 0 && <div><h3 className="mb-1 font-semibold">Información faltante</h3><ul className="list-disc pl-5">{r.missing_info.map((x: string, i: number) => <li key={i}>{x}</li>)}</ul></div>}
+          <p className="text-xs text-muted-foreground">Análisis automático orientativo; no constituye asesoría legal. Verifica siempre en las bases oficiales.</p>
+        </>
+      )}
+    </section>
   );
 }
