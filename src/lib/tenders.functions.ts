@@ -82,7 +82,7 @@ export const getTender = createServerFn({ method: "POST" })
       sb.from("tender_items").select("*").eq("tender_id", data.id).order("item_number"),
       sb.from("documents").select("id, doc_type, file_name, extension, size_label, stage, published_at, url").eq("tender_id", data.id).order("published_at", { ascending: true, nullsFirst: true }),
       sb.from("saved_tenders").select("id").eq("tender_id", data.id).maybeSingle(),
-      sb.from("analyses").select("id, score, created_at, tender_version, profile_version").eq("tender_id", data.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      sb.from("analyses").select("id, score, created_at, tender_version, profile_version, result").eq("tender_id", data.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     ]);
     // Docs from the listing duplicate ficha docs with a better name; hide unnamed duplicates.
     const named = (docs.data ?? []).filter((d) => d.file_name);
@@ -163,4 +163,39 @@ export const saveProfile = createServerFn({ method: "POST" })
       : await sb.from("company_profiles").insert({ ...payload, user_id: context.userId }).select("*").single();
     if (res.error) throw new Error("No se pudo guardar el perfil");
     return res.data;
+  });
+
+export const analyzeTender = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ tenderId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase;
+    const [{ data: tender }, { data: items }, { data: docs }, { data: profile }] = await Promise.all([
+      sb.from("tenders").select("*").eq("id", data.tenderId).maybeSingle(),
+      sb.from("tender_items").select("*").eq("tender_id", data.tenderId).order("item_number"),
+      sb.from("documents").select("*").eq("tender_id", data.tenderId).order("published_at", { ascending: true, nullsFirst: true }),
+      sb.from("company_profiles").select("*").maybeSingle(),
+    ]);
+    if (!tender) throw new Error("Oportunidad no encontrada");
+    if (!profile) throw new Error("Completa primero el perfil en «Mi empresa»");
+    const named = (docs ?? []).filter((d) => d.file_name);
+    // Writes go through the service role after verifying the caller; users can only read their own rows.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: job, error: jobErr } = await supabaseAdmin.from("analysis_jobs").insert({
+      user_id: context.userId, tender_id: tender.id, tender_version: tender.version, profile_version: profile.version, status: "procesando",
+    }).select("id").single();
+    if (jobErr || !job) throw new Error("No se pudo iniciar el análisis");
+    try {
+      const { runAnalysis } = await import("./analysis.server");
+      const result = await runAnalysis({ tender, items: items ?? [], documents: named.length ? named : docs ?? [], profile });
+      const { data: row, error } = await supabaseAdmin.from("analyses").insert({
+        job_id: job.id, user_id: context.userId, tender_id: tender.id, tender_version: tender.version, profile_version: profile.version, score: result.score, result: result as any,
+      }).select("id, score, created_at, tender_version, profile_version, result").single();
+      if (error) throw new Error("No se pudo guardar el análisis");
+      await supabaseAdmin.from("analysis_jobs").update({ status: "completado" }).eq("id", job.id);
+      return row;
+    } catch (e: any) {
+      await supabaseAdmin.from("analysis_jobs").update({ status: "error", error: String(e?.message ?? e).slice(0, 500) }).eq("id", job.id);
+      throw new Error(e?.message ?? "Error en el análisis");
+    }
   });

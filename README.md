@@ -16,3 +16,8 @@ Descubre contrataciones vigentes del Estado peruano (SEACE), fíltralas, guárda
 - Montos sin conversión de moneda; "---" se guarda como no informado.
 - Catálogo visible solo a usuarios autenticados (lectura); perfil, guardadas y análisis privados por RLS.
 - Pendiente: hito 4 (análisis con OpenAI), cron programado, despliegue en Vercel.
+
+## Análisis (Hito 4)
+- Usa OpenAI directo con `OPENAI_API_KEY` (modelo `OPENAI_MODEL`, por defecto gpt-4.1-mini).
+- Lee hasta 3 bases PDF (máx. 12 MB c/u) descargadas de SEACE; si no hay, analiza solo con datos oficiales y lo indica.
+- Resultado: puntaje 0–100, recomendación, requisitos con estado/evidencia/fuente, riesgos e información faltante. Se guarda por usuario y versión de oportunidad/perfil.
