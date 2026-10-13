@@ -103,7 +103,7 @@ function ProfilePage() {
         <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
           <div className="space-y-1.5"><Label htmlFor="cap">Capacidad económica declarada *</Label><Input id="cap" type="number" min={0} value={f.capacity_amount ?? ""} onChange={(e) => up("capacity_amount", e.target.value === "" ? null : Number(e.target.value))} /></div>
           <div className="space-y-1.5"><Label htmlFor="cur">Moneda</Label>
-            <select id="cur" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={f.capacity_currency ?? "PEN"} onChange={(e) => up("capacity_currency", e.target.value)}><option value="PEN">S/.</option><option value="USD">US$</option></select></div>
+            <select id="cur" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={f.capacity_currency ?? "PEN"} onChange={(e) => up("capacity_currency", e.target.value)}><option value="PEN">S/</option><option value="USD">US$</option></select></div>
         </div>
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium">Experiencia por especialidad</legend>
@@ -111,7 +111,7 @@ function ProfilePage() {
             <div key={i} className="grid gap-2 sm:grid-cols-[1fr_160px_110px_auto]">
               <Input aria-label="Especialidad" placeholder="Especialidad" value={x.specialty} onChange={(e) => up("experience", f.experience.map((y, j) => j === i ? { ...y, specialty: e.target.value } : y))} />
               <Input aria-label="Monto facturado" type="number" placeholder="Monto" value={x.amount ?? ""} onChange={(e) => up("experience", f.experience.map((y, j) => j === i ? { ...y, amount: e.target.value === "" ? null : Number(e.target.value) } : y))} />
-              <select aria-label="Moneda" className="h-9 rounded-md border bg-background px-2 text-sm" value={x.currency ?? "PEN"} onChange={(e) => up("experience", f.experience.map((y, j) => j === i ? { ...y, currency: e.target.value } : y))}><option value="PEN">S/.</option><option value="USD">US$</option></select>
+              <select aria-label="Moneda" className="h-9 rounded-md border bg-background px-2 text-sm" value={x.currency ?? "PEN"} onChange={(e) => up("experience", f.experience.map((y, j) => j === i ? { ...y, currency: e.target.value } : y))}><option value="PEN">S/</option><option value="USD">US$</option></select>
               <Button type="button" variant="ghost" size="icon" aria-label="Quitar experiencia" onClick={() => up("experience", f.experience.filter((_, j) => j !== i))}><Trash2 className="h-4 w-4" /></Button>
             </div>
           ))}

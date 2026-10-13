@@ -145,7 +145,7 @@ function OpportunitiesPage() {
             </div>
             <Label htmlFor="moneda" className="text-xs">Moneda</Label>
             <select id="moneda" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={params.moneda ?? ""} onChange={(e) => set({ moneda: e.target.value || undefined })}>
-              <option value="">Todas</option><option value="Soles">S/.</option><option value="Dólares">US$</option>
+              <option value="">Todas</option><option value="Soles">S/</option><option value="Dólares">US$</option>
             </select>
             <p className="text-xs text-muted-foreground">Sin conversión de moneda. Los procedimientos sin monto publicado no aparecen al filtrar por monto.</p>
           </fieldset>

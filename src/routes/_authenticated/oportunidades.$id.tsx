@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { analyzeTender, getTender } from "@/lib/tenders.functions";
 import { toast } from "sonner";
-import { formatDate, formatMoney } from "@/lib/tender-rules";
+import { formatDate, formatMoney, currencyDescription } from "@/lib/tender-rules";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
 
 export const Route = createFileRoute("/_authenticated/oportunidades/$id")({
@@ -92,6 +92,7 @@ function DetailPage() {
             <Field label="Procedimiento">{t.procedure_type}</Field>
             <Field label="Modalidad">{t.selection_modality}</Field>
             <Field label="Valor referencial (procedimiento)">{formatMoney(t.amount, t.currency)}</Field>
+            <Field label="Moneda">{currencyDescription(t.currency)}</Field>
             <Field label="Regiones (ubicación SEACE)">{t.regions.join(", ")}</Field>
             <Field label="Publicación">{formatDate(t.published_at)}</Field>
             <Field label="Registro de participantes">{formatDate(t.participation_start)} – {formatDate(t.participation_end)}</Field>
