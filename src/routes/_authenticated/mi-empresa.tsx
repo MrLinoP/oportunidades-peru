@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,14 @@ function ProfilePage() {
   const [f, setF] = useState<ProfileInput>(empty);
   const [kw, setKw] = useState("");
   const [busy, setBusy] = useState(false);
+  const longFieldRefs = useRef<Partial<Record<"staff" | "certifications" | "availability" | "restrictions", HTMLTextAreaElement | null>>>({});
+  useLayoutEffect(() => {
+    const els = Object.values(longFieldRefs.current).filter((el): el is HTMLTextAreaElement => !!el);
+    if (!els.length) return;
+    els.forEach((el) => { el.style.height = "auto"; });
+    const max = Math.max(...els.map((el) => el.scrollHeight));
+    els.forEach((el) => { el.style.height = `${max}px`; });
+  }, [f.staff, f.certifications, f.availability, f.restrictions, data]);
   useEffect(() => {
     if (data) {
       setF({ ...empty, ...Object.fromEntries(Object.entries(data).filter(([k]) => k in empty)) } as ProfileInput);
@@ -123,7 +131,7 @@ function ProfilePage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {([["staff", "Personal clave"], ["certifications", "Certificaciones"], ["availability", "Disponibilidad"], ["restrictions", "Restricciones"]] as const).map(([k, l]) => (
-            <div key={k} className="min-w-0 space-y-1.5"><Label htmlFor={k}>{l}</Label><Textarea id={k} rows={2} value={(f[k] as string) ?? ""} onChange={(e) => up(k, e.target.value)} /></div>
+            <div key={k} className="min-w-0 space-y-1.5"><Label htmlFor={k}>{l}</Label><Textarea ref={(el) => { longFieldRefs.current[k] = el; }} id={k} rows={3} className="resize-none overflow-hidden" value={(f[k] as string) ?? ""} onChange={(e) => up(k, e.target.value)} /></div>
           ))}
         </div>
       </section>
