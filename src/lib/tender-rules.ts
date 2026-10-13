@@ -87,3 +87,19 @@ export function formatDate(iso: string | null, dateOnly = false): string {
     ? d.toLocaleDateString("es-PE", { ...LIMA, day: "2-digit", month: "short", year: "numeric" })
     : d.toLocaleString("es-PE", { ...LIMA, day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
+
+/** Lightweight suggestions deliberately exclude bases, amounts and legal eligibility. */
+export function suggestionFacts(t: {
+  id: string; title: string; object_type: string | null; regions: string[];
+  tender_items: { description: string | null; cubso_label: string | null; region: string | null }[];
+}) {
+  return {
+    id: t.id, titulo: t.title, objeto: t.object_type, regiones: t.regions,
+    items: t.tender_items.map((i) => ({ nombre: i.description || i.cubso_label || "", region: i.region })),
+  };
+}
+
+export function validSuggestionIds(ids: string[], candidates: { id: string }[]): string[] {
+  const allowed = new Set(candidates.map((c) => c.id));
+  return [...new Set(ids)].filter((id) => allowed.has(id));
+}

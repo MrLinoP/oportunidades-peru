@@ -15,6 +15,7 @@ export const searchSchema = z.object({
   estado: z.enum(["abiertas", "todas"]).optional(),
   orden: z.enum(["cierre", "publicacion"]).optional(),
   page: z.number().int().min(1).optional(),
+  suggestionIds: z.array(z.string().uuid()).max(10000).optional(),
 });
 export type SearchParams = z.infer<typeof searchSchema>;
 
@@ -28,6 +29,7 @@ export const searchTenders = createServerFn({ method: "POST" })
     const sb = context.supabase;
     const page = data.page ?? 1;
     let q = sb.from("tenders").select(LIST_COLS, { count: "exact" });
+    if (data.suggestionIds) q = q.in("id", data.suggestionIds.length ? data.suggestionIds : ["00000000-0000-0000-0000-000000000000"]);
     const term = data.q?.replace(/[,()%*\\]/g, " ").trim();
     if (term) q = q.or(`title.ilike.%${term}%,description.ilike.%${term}%,entity.ilike.%${term}%`);
     if (data.objeto?.length) q = q.in("object_type", data.objeto);
@@ -58,6 +60,31 @@ export const searchTenders = createServerFn({ method: "POST" })
       lastSync: lastSync?.[0] ?? null,
       lastOk,
     };
+  });
+
+export const suggestTenders = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ estado: z.enum(["abiertas", "todas"]) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase;
+    const { data: profile, error: profileError } = await sb.from("company_profiles")
+      .select("keywords, offerings, regions, experience, restrictions, availability, rnp_registrations")
+      .eq("user_id", context.userId).maybeSingle();
+    if (profileError) throw new Error("No se pudo consultar Mi empresa");
+    if (!profile || (!profile.offerings?.trim() && !profile.keywords.length)) throw new Error("Completa los bienes o servicios ofrecidos o las palabras clave en «Mi empresa» para recibir sugerencias.");
+    const cols = "id, title, object_type, regions, tender_items(description, cubso_label, region)" as const;
+    const candidates = [];
+    const now = new Date().toISOString();
+    for (let offset = 0; ; offset += 500) {
+      let query = sb.from("tenders").select(cols).order("id").range(offset, offset + 499);
+      if (data.estado === "abiertas") query = query.eq("listed_in_source", true).gt("closing_at", now);
+      const { data: rows, error } = await query;
+      if (error) throw new Error("No se pudo consultar el catálogo para sugerencias");
+      candidates.push(...rows ?? []);
+      if (!rows || rows.length < 500) break;
+    }
+    const { runSuggestions } = await import("./suggestions.server");
+    return { ids: await runSuggestions(candidates, profile), reviewed: candidates.length };
   });
 
 export const getFilterOptions = createServerFn({ method: "GET" })

@@ -17,3 +17,4 @@
 - Never store mock/seed tenders; only real synced records — production requirement.
 - Public access screens share AuthShell and scoped auth CSS tokens; signup duplicate detection uses only the auth response, never a privileged email lookup — keeps presentation consistent without exposing an account directory.
 - Platform colors and motion are centralized in global semantic tokens and shared controls, with reduced-motion overrides — keeps every page consistent without changing business flows.
+- Lightweight recommendations run in suggestions.server.ts with the existing Analyze model configuration, authenticated profile reads and paginated catalogue batches; returned real IDs intersect normal search filters before pagination — avoids document downloads, cross-account reads and first-page-only matching.
