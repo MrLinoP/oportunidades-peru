@@ -90,7 +90,7 @@ export function formatDate(iso: string | null, dateOnly = false): string {
 
 /** Lightweight suggestions deliberately exclude bases, amounts and legal eligibility. */
 export function suggestionFacts(t: {
-  id: string; title: string; object_type: string; regions: string[];
+  id: string; title: string; object_type: string | null; regions: string[];
   tender_items: { description: string | null; cubso_label: string | null; region: string | null }[];
 }) {
   return {
