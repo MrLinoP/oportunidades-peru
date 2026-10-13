@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { searchSchema, searchTenders, suggestTenders, getFilterOptions, PAGE_SIZE, type SearchParams } from "@/lib/tenders.functions";
-import { OBJECT_TYPES, REGION_OPTIONS, formatDate, formatMoney } from "@/lib/tender-rules";
+import { OBJECT_TYPES, REGION_OPTIONS, formatDate, formatMoney, currencyLabel } from "@/lib/tender-rules";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
 import { paginationPages } from "@/lib/pagination";
 
@@ -83,7 +83,7 @@ function OpportunitiesPage() {
    params.region?.forEach((o) => chips.push({ label: `Región: ${o}`, clear: () => set({ region: params.region?.filter((x) => x !== o) }) }));
   if (params.min != null) chips.push({ label: `Mín ${params.min}`, clear: () => set({ min: undefined }) });
   if (params.max != null) chips.push({ label: `Máx ${params.max}`, clear: () => set({ max: undefined }) });
-  if (params.moneda) chips.push({ label: params.moneda, clear: () => set({ moneda: undefined }) });
+  if (params.moneda) chips.push({ label: currencyLabel(params.moneda), clear: () => set({ moneda: undefined }) });
   if (params.cierreDesde) chips.push({ label: `Cierre desde ${params.cierreDesde}`, clear: () => set({ cierreDesde: undefined }) });
   if (params.cierreHasta) chips.push({ label: `Cierre hasta ${params.cierreHasta}`, clear: () => set({ cierreHasta: undefined }) });
 
@@ -145,7 +145,7 @@ function OpportunitiesPage() {
             </div>
             <Label htmlFor="moneda" className="text-xs">Moneda</Label>
             <select id="moneda" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={params.moneda ?? ""} onChange={(e) => set({ moneda: e.target.value || undefined })}>
-              <option value="">Todas</option><option>Soles</option><option>Dólares</option>
+              <option value="">Todas</option><option value="Soles">S/.</option><option value="Dólares">US$</option>
             </select>
             <p className="text-xs text-muted-foreground">Sin conversión de moneda. Los procedimientos sin monto publicado no aparecen al filtrar por monto.</p>
           </fieldset>

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { currencyAliases } from "@/lib/tender-rules";
 
 export const searchSchema = z.object({
   q: z.string().max(200).optional(),
@@ -37,7 +38,7 @@ export const searchTenders = createServerFn({ method: "POST" })
     if (data.region?.length) q = q.overlaps("regions", data.region);
     if (data.min != null) q = q.gte("amount", data.min);
     if (data.max != null) q = q.lte("amount", data.max);
-    if (data.moneda) q = q.eq("currency", data.moneda);
+    if (data.moneda) q = q.in("currency", currencyAliases(data.moneda));
     if (data.cierreDesde) q = q.gte("closing_at", `${data.cierreDesde}T00:00:00-05:00`);
     if (data.cierreHasta) q = q.lte("closing_at", `${data.cierreHasta}T23:59:59-05:00`);
     if ((data.estado ?? "abiertas") === "abiertas") q = q.eq("listed_in_source", true).gt("closing_at", new Date().toISOString());
