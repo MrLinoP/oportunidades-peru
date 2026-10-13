@@ -74,9 +74,24 @@ export function profileReadyForScoring(p: {
   );
 }
 
+export function currencyAliases(currency: string): string[] {
+  const normalized = currency.trim().toLowerCase();
+  if (["pen", "soles", "nuevos soles", "s/."].includes(normalized)) return ["Soles", "Nuevos Soles", "PEN", "S/."];
+  if (["usd", "dólares", "dólar norteamericano", "us$"].includes(normalized)) return ["Dólar Norteamericano", "Dólares", "USD", "US$"];
+  return [currency];
+}
+
+export function currencyLabel(currency: string | null): string {
+  if (!currency) return "";
+  const aliases = currencyAliases(currency);
+  if (aliases.includes("PEN")) return "S/.";
+  if (aliases.includes("USD")) return "US$";
+  return currency;
+}
+
 export function formatMoney(amount: number | null, currency: string | null): string {
   if (amount == null) return "No informado";
-  return `${currency ?? ""} ${amount.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.trim();
+  return `${currencyLabel(currency)} ${amount.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.trim();
 }
 
 const LIMA = { timeZone: "America/Lima" } as const;
