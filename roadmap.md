@@ -1,5 +1,5 @@
 # Roadmap
-- [x] Mostrar S/. en montos y campos en soles; comprobado en listado y detalle con sesión real. Filtro conservado y corregido: SEACE sí informa Dólar Norteamericano (BCRP, COFIDE y otros).
+- [x] Mostrar S/ en toda la plataforma, moneda junto a montos no informados y campo Moneda en el detalle; verificado con registros reales en soles y dólares y 15 pruebas aprobadas.
 - [x] Sugerencias ligeras con el mismo modelo de OpenAI, adaptadas a Mi empresa y mostradas en el listado existente (verificadas con sesión real; filtros y regreso al catálogo conservados)
 - [x] Unificar paleta verde del acceso y animaciones suaves en toda la plataforma (verificado con sesión en oportunidades, detalle, Mi empresa y Guardadas)
 - [x] Mejorar pantallas de acceso con ilustración de Perú, animaciones y aviso de cuenta existente (aviso probado con respuesta simulada; no con una cuenta real)

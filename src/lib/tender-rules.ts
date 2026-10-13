@@ -76,7 +76,7 @@ export function profileReadyForScoring(p: {
 
 export function currencyAliases(currency: string): string[] {
   const normalized = currency.trim().toLowerCase();
-  if (["pen", "soles", "nuevos soles", "s/."].includes(normalized)) return ["Soles", "Nuevos Soles", "PEN", "S/."];
+  if (["pen", "soles", "nuevos soles", "s/", "s/."].includes(normalized)) return ["Soles", "Nuevos Soles", "PEN", "S/.", "S/"];
   if (["usd", "dólares", "dólar norteamericano", "us$"].includes(normalized)) return ["Dólar Norteamericano", "Dólares", "USD", "US$"];
   return [currency];
 }
@@ -84,13 +84,23 @@ export function currencyAliases(currency: string): string[] {
 export function currencyLabel(currency: string | null): string {
   if (!currency) return "";
   const aliases = currencyAliases(currency);
-  if (aliases.includes("PEN")) return "S/.";
+  if (aliases.includes("PEN")) return "S/";
   if (aliases.includes("USD")) return "US$";
   return currency;
 }
 
+export function currencyDescription(currency: string | null): string {
+  const label = currencyLabel(currency);
+  if (label === "S/") return "Soles (S/)";
+  if (label === "US$") return "Dólar Norteamericano (US$)";
+  return label || "No informado";
+}
+
 export function formatMoney(amount: number | null, currency: string | null): string {
-  if (amount == null) return "No informado";
+  if (amount == null) {
+    const label = currencyLabel(currency);
+    return label ? `No informado (${label})` : "No informado";
+  }
   return `${currencyLabel(currency)} ${amount.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.trim();
 }
 
