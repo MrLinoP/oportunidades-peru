@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Sugerencias ligeras con el mismo modelo de OpenAI, adaptadas a Mi empresa y mostradas en el listado existente
 - [x] Unificar paleta verde del acceso y animaciones suaves en toda la plataforma (verificado con sesión en oportunidades, detalle, Mi empresa y Guardadas)
 - [x] Mejorar pantallas de acceso con ilustración de Perú, animaciones y aviso de cuenta existente (aviso probado con respuesta simulada; no con una cuenta real)
 - [x] Hito 1: fuente SEACE verificada, sincronización real, documentos descargables
