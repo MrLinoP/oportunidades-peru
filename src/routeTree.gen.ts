@@ -10,33 +10,158 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedGuardadasRouteImport } from './routes/_authenticated/guardadas'
+import { Route as AuthenticatedMiEmpresaRouteImport } from './routes/_authenticated/mi-empresa'
+import { Route as AuthenticatedOportunidadesRouteImport } from './routes/_authenticated/oportunidades'
+import { Route as AuthenticatedOportunidadesIndexRouteImport } from './routes/_authenticated/oportunidades.index'
+import { Route as AuthenticatedOportunidadesIdRouteImport } from './routes/_authenticated/oportunidades.$id'
+import { Route as ApiPublicSyncRouteImport } from './routes/api/public/sync'
+import { Route as ApiPublicDocumentsIdRouteImport } from './routes/api/public/documents.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedGuardadasRoute = AuthenticatedGuardadasRouteImport.update({
+  id: '/guardadas',
+  path: '/guardadas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMiEmpresaRoute = AuthenticatedMiEmpresaRouteImport.update({
+  id: '/mi-empresa',
+  path: '/mi-empresa',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOportunidadesRoute =
+  AuthenticatedOportunidadesRouteImport.update({
+    id: '/oportunidades',
+    path: '/oportunidades',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOportunidadesIndexRoute =
+  AuthenticatedOportunidadesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedOportunidadesRoute,
+  } as any)
+const AuthenticatedOportunidadesIdRoute =
+  AuthenticatedOportunidadesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedOportunidadesRoute,
+  } as any)
+const ApiPublicSyncRoute = ApiPublicSyncRouteImport.update({
+  id: '/api/public/sync',
+  path: '/api/public/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDocumentsIdRoute = ApiPublicDocumentsIdRouteImport.update({
+  id: '/api/public/documents/$id',
+  path: '/api/public/documents/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/guardadas': typeof AuthenticatedGuardadasRoute
+  '/mi-empresa': typeof AuthenticatedMiEmpresaRoute
+  '/oportunidades': typeof AuthenticatedOportunidadesRouteWithChildren
+  '/oportunidades/$id': typeof AuthenticatedOportunidadesIdRoute
+  '/api/public/sync': typeof ApiPublicSyncRoute
+  '/oportunidades/': typeof AuthenticatedOportunidadesIndexRoute
+  '/api/public/documents/$id': typeof ApiPublicDocumentsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/guardadas': typeof AuthenticatedGuardadasRoute
+  '/mi-empresa': typeof AuthenticatedMiEmpresaRoute
+  '/oportunidades/$id': typeof AuthenticatedOportunidadesIdRoute
+  '/api/public/sync': typeof ApiPublicSyncRoute
+  '/oportunidades': typeof AuthenticatedOportunidadesIndexRoute
+  '/api/public/documents/$id': typeof ApiPublicDocumentsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/guardadas': typeof AuthenticatedGuardadasRoute
+  '/_authenticated/mi-empresa': typeof AuthenticatedMiEmpresaRoute
+  '/_authenticated/oportunidades': typeof AuthenticatedOportunidadesRouteWithChildren
+  '/_authenticated/oportunidades/$id': typeof AuthenticatedOportunidadesIdRoute
+  '/api/public/sync': typeof ApiPublicSyncRoute
+  '/_authenticated/oportunidades/': typeof AuthenticatedOportunidadesIndexRoute
+  '/api/public/documents/$id': typeof ApiPublicDocumentsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/guardadas'
+    | '/mi-empresa'
+    | '/oportunidades'
+    | '/oportunidades/$id'
+    | '/api/public/sync'
+    | '/oportunidades/'
+    | '/api/public/documents/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/guardadas'
+    | '/mi-empresa'
+    | '/oportunidades/$id'
+    | '/api/public/sync'
+    | '/oportunidades'
+    | '/api/public/documents/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/guardadas'
+    | '/_authenticated/mi-empresa'
+    | '/_authenticated/oportunidades'
+    | '/_authenticated/oportunidades/$id'
+    | '/api/public/sync'
+    | '/_authenticated/oportunidades/'
+    | '/api/public/documents/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicSyncRoute: typeof ApiPublicSyncRoute
+  ApiPublicDocumentsIdRoute: typeof ApiPublicDocumentsIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +173,117 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/guardadas': {
+      id: '/_authenticated/guardadas'
+      path: '/guardadas'
+      fullPath: '/guardadas'
+      preLoaderRoute: typeof AuthenticatedGuardadasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mi-empresa': {
+      id: '/_authenticated/mi-empresa'
+      path: '/mi-empresa'
+      fullPath: '/mi-empresa'
+      preLoaderRoute: typeof AuthenticatedMiEmpresaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/oportunidades': {
+      id: '/_authenticated/oportunidades'
+      path: '/oportunidades'
+      fullPath: '/oportunidades'
+      preLoaderRoute: typeof AuthenticatedOportunidadesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/oportunidades/': {
+      id: '/_authenticated/oportunidades/'
+      path: '/'
+      fullPath: '/oportunidades/'
+      preLoaderRoute: typeof AuthenticatedOportunidadesIndexRouteImport
+      parentRoute: typeof AuthenticatedOportunidadesRoute
+    }
+    '/_authenticated/oportunidades/$id': {
+      id: '/_authenticated/oportunidades/$id'
+      path: '/$id'
+      fullPath: '/oportunidades/$id'
+      preLoaderRoute: typeof AuthenticatedOportunidadesIdRouteImport
+      parentRoute: typeof AuthenticatedOportunidadesRoute
+    }
+    '/api/public/sync': {
+      id: '/api/public/sync'
+      path: '/api/public/sync'
+      fullPath: '/api/public/sync'
+      preLoaderRoute: typeof ApiPublicSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/documents/$id': {
+      id: '/api/public/documents/$id'
+      path: '/api/public/documents/$id'
+      fullPath: '/api/public/documents/$id'
+      preLoaderRoute: typeof ApiPublicDocumentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedOportunidadesRouteChildren {
+  AuthenticatedOportunidadesIdRoute: typeof AuthenticatedOportunidadesIdRoute
+  AuthenticatedOportunidadesIndexRoute: typeof AuthenticatedOportunidadesIndexRoute
+}
+
+const AuthenticatedOportunidadesRouteChildren: AuthenticatedOportunidadesRouteChildren =
+  {
+    AuthenticatedOportunidadesIdRoute: AuthenticatedOportunidadesIdRoute,
+    AuthenticatedOportunidadesIndexRoute: AuthenticatedOportunidadesIndexRoute,
+  }
+
+const AuthenticatedOportunidadesRouteWithChildren =
+  AuthenticatedOportunidadesRoute._addFileChildren(
+    AuthenticatedOportunidadesRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedGuardadasRoute: typeof AuthenticatedGuardadasRoute
+  AuthenticatedMiEmpresaRoute: typeof AuthenticatedMiEmpresaRoute
+  AuthenticatedOportunidadesRoute: typeof AuthenticatedOportunidadesRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedGuardadasRoute: AuthenticatedGuardadasRoute,
+  AuthenticatedMiEmpresaRoute: AuthenticatedMiEmpresaRoute,
+  AuthenticatedOportunidadesRoute: AuthenticatedOportunidadesRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicSyncRoute: ApiPublicSyncRoute,
+  ApiPublicDocumentsIdRoute: ApiPublicDocumentsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
