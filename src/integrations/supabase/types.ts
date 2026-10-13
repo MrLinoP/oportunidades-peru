@@ -213,6 +213,24 @@ export type Database = {
         }
         Relationships: []
       }
+      cubso_segments: {
+        Row: {
+          code: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       document_chunks: {
         Row: {
           chunk_index: number
