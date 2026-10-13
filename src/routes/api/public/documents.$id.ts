@@ -13,7 +13,8 @@ export const Route = createFileRoute("/api/public/documents/$id")({
         const { seaceFetch } = await import("@/lib/seace.server");
         try {
           const res = await seaceFetch(doc.url, { headers: { Accept: "*/*" } }, 2);
-          if (!res.ok || !res.body) return new Response("La fuente oficial no entregó el documento. Intente más tarde.", { status: 502 });
+          // SEACE sometimes blocks server-side downloads (403); fall back to the official link in the user's browser.
+          if (!res.ok || !res.body) return Response.redirect(doc.url, 302);
           const name = doc.file_name ?? /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "documento";
           return new Response(res.body, {
             headers: {
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/api/public/documents/$id")({
             },
           });
         } catch {
-          return new Response("Fuente oficial no disponible. Intente más tarde.", { status: 502 });
+          return Response.redirect(doc.url, 302);
         }
       },
     },
