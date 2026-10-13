@@ -3,4 +3,5 @@
 - [x] Hito 2: login/registro/recuperación, Mi empresa versionada, RLS
 - [x] Hito 3: búsqueda con filtros en URL, detalle, guardadas
 - [x] Hito 4: análisis con OpenAI (bases PDF + perfil, evidencia por requisito)
-- [ ] Sincronización programada (cron) y despliegue Vercel
+- [x] Sincronización diaria automática (00:00 Lima)
+- [ ] Despliegue Vercel
