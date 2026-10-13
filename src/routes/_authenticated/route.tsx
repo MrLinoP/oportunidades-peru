@@ -40,7 +40,7 @@ function AppLayout() {
           <Button size="sm" variant="secondary" onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/auth" }); }}>Salir</Button>
         </div>
       </header>
-      <main id="main" className="mx-auto max-w-7xl px-4 py-6"><Outlet /></main>
+      <main id="main" className="mx-auto w-full max-w-7xl px-2 py-4 sm:px-4 sm:py-6"><Outlet /></main>
     </div>
   );
 }
