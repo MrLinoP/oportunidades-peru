@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { X, Search, ExternalLink, Sparkles, LoaderCircle } from "lucide-react";
+import { X, Search, ExternalLink, Sparkles, LoaderCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { searchSchema, searchTenders, suggestTenders, getFilterOptions, PAGE_SIZE, type SearchParams } from "@/lib/tenders.functions";
 import { OBJECT_TYPES, REGION_OPTIONS, formatDate, formatMoney } from "@/lib/tender-rules";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
+import { paginationPages } from "@/lib/pagination";
 
 export const Route = createFileRoute("/_authenticated/oportunidades/")({
   validateSearch: (s) => searchSchema.parse(s),
@@ -219,17 +220,13 @@ function OpportunitiesPage() {
                 ))}
               </ul>
               <nav aria-label="Paginación" className="flex flex-wrap items-center justify-center gap-1.5">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => set({ page: 1 })} aria-label="Ir a la primera página">« Primera</Button>
-                {page - 3 >= 1 && (
-                  <Button variant="outline" size="sm" onClick={() => set({ page: page - 3 })} aria-label={`Retroceder 3 páginas, a la página ${page - 3}`}>−3</Button>
-                )}
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => set({ page: page - 1 })}>Anterior</Button>
-                <span className="px-2 text-sm">Página {page} de {totalPages}</span>
-                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => set({ page: page + 1 })}>Siguiente</Button>
-                {page + 3 <= totalPages && (
-                  <Button variant="outline" size="sm" onClick={() => set({ page: Math.min(page + 3, totalPages) })} aria-label={`Avanzar 3 páginas, a la página ${page + 3}`}>+3</Button>
-                )}
-                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => set({ page: totalPages })} aria-label="Ir a la última página">Última »</Button>
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => set({ page: page - 1 })} aria-label="Página anterior"><ChevronLeft className="h-4 w-4" aria-hidden /><span className="hidden sm:inline">Anterior</span></Button>
+                {paginationPages(page, totalPages).map((entry, index) => entry === "ellipsis" ? (
+                  <span key={`gap-${index}`} className="flex h-9 w-6 shrink-0 items-center justify-center text-muted-foreground" aria-hidden="true">…</span>
+                ) : (
+                  <Button key={entry} variant={entry === page ? "default" : "ghost"} size="sm" className="h-9 min-w-9 shrink-0 px-2" aria-label={`Ir a la página ${entry}`} aria-current={entry === page ? "page" : undefined} onClick={() => set({ page: entry })}>{entry}</Button>
+                ))}
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => set({ page: page + 1 })} aria-label="Página siguiente"><span className="hidden sm:inline">Siguiente</span><ChevronRight className="h-4 w-4" aria-hidden /></Button>
               </nav>
             </>
           )}
