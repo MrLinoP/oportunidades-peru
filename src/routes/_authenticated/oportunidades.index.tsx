@@ -218,10 +218,18 @@ function OpportunitiesPage() {
                   </li>
                 ))}
               </ul>
-              <nav aria-label="Paginación" className="flex items-center justify-between">
+              <nav aria-label="Paginación" className="flex flex-wrap items-center justify-center gap-1.5">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => set({ page: 1 })} aria-label="Ir a la primera página">« Primera</Button>
+                {page - 3 >= 1 && (
+                  <Button variant="outline" size="sm" onClick={() => set({ page: page - 3 })} aria-label={`Retroceder 3 páginas, a la página ${page - 3}`}>−3</Button>
+                )}
                 <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => set({ page: page - 1 })}>Anterior</Button>
-                <span className="text-sm">Página {page} de {totalPages}</span>
+                <span className="px-2 text-sm">Página {page} de {totalPages}</span>
                 <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => set({ page: page + 1 })}>Siguiente</Button>
+                {page + 3 <= totalPages && (
+                  <Button variant="outline" size="sm" onClick={() => set({ page: Math.min(page + 3, totalPages) })} aria-label={`Avanzar 3 páginas, a la página ${page + 3}`}>+3</Button>
+                )}
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => set({ page: totalPages })} aria-label="Ir a la última página">Última »</Button>
               </nav>
             </>
           )}
