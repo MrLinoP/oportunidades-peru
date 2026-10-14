@@ -10,12 +10,13 @@ export type AnalysisResult = {
   requirements: { requirement: string; status: "cumple" | "no_cumple" | "por_verificar"; reason: string; evidence: string; source: string }[];
   risks: string[];
   missing_info: string[];
+  action_plan: { action: string; addresses: string; category: string; priority: "alta" | "media" | "baja"; detail: string }[];
   documents_used: string[];
 };
 
 const schema = {
   type: "object", additionalProperties: false,
-  required: ["score", "recommendation", "summary", "requirements", "risks", "missing_info"],
+  required: ["score", "recommendation", "summary", "requirements", "risks", "missing_info", "action_plan"],
   properties: {
     score: { type: "integer", description: "0-100 compatibilidad empresa-oportunidad" },
     recommendation: { type: "string", enum: ["participar", "evaluar", "no_participar"] },
@@ -35,6 +36,20 @@ const schema = {
     },
     risks: { type: "array", items: { type: "string" } },
     missing_info: { type: "array", items: { type: "string" } },
+    action_plan: {
+      type: "array", description: "Acciones concretas para cerrar brechas de requisitos no_cumple o por_verificar",
+      items: {
+        type: "object", additionalProperties: false,
+        required: ["action", "addresses", "category", "priority", "detail"],
+        properties: {
+          action: { type: "string", description: "Acción concreta y realista" },
+          addresses: { type: "string", description: "Requisito o brecha que resuelve" },
+          category: { type: "string", enum: ["certificacion", "rnp", "personal", "experiencia", "consorcio_alianza", "capacidad_financiera", "documentacion", "otro"] },
+          priority: { type: "string", enum: ["alta", "media", "baja"] },
+          detail: { type: "string", description: "Cómo hacerlo y si es viable antes del cierre" },
+        },
+      },
+    },
   },
 };
 

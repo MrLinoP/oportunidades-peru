@@ -154,6 +154,36 @@ export const listSaved = createServerFn({ method: "GET" })
     });
   });
 
+export const listAnalyzed = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const sb = context.supabase;
+    const { data: analyses } = await sb.from("analyses")
+      .select("tender_id, score, created_at, tender_version, profile_version, result")
+      .order("created_at", { ascending: false }).limit(1000);
+    const latest = new Map<string, any>();
+    const counts = new Map<string, number>();
+    for (const a of analyses ?? []) {
+      counts.set(a.tender_id, (counts.get(a.tender_id) ?? 0) + 1);
+      if (!latest.has(a.tender_id)) latest.set(a.tender_id, a);
+    }
+    const ids = [...latest.keys()];
+    if (!ids.length) return [];
+    const [{ data: tenders }, { data: profile }] = await Promise.all([
+      sb.from("tenders").select(`${LIST_COLS}, version`).in("id", ids),
+      sb.from("company_profiles").select("version").maybeSingle(),
+    ]);
+    const byId = new Map((tenders ?? []).map((t: any) => [t.id, t]));
+    return ids.filter((id) => byId.has(id)).map((id) => {
+      const a = latest.get(id); const t: any = byId.get(id);
+      return {
+        tender: t, count: counts.get(id) ?? 1,
+        analysis: { score: a.score, created_at: a.created_at, recommendation: (a.result as any)?.recommendation ?? null },
+        outdated: a.tender_version !== t.version || (!!profile && a.profile_version !== profile.version),
+      };
+    });
+  });
+
 const profileSchema = z.object({
   business_name: z.string().max(200).nullable(),
   ruc: z.string().regex(/^\d{11}$/, "El RUC debe tener 11 dígitos").nullable().or(z.literal("").transform(() => null)),
