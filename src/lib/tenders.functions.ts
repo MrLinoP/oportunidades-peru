@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { currencyAliases } from "@/lib/tender-rules";
+import { currencyAliases, REGION_OPTIONS } from "@/lib/tender-rules";
 
 export const searchSchema = z.object({
   q: z.string().max(200).optional(),
@@ -13,8 +13,9 @@ export const searchSchema = z.object({
   moneda: z.string().optional(),
   cierreDesde: z.string().optional(),
   cierreHasta: z.string().optional(),
-  estado: z.enum(["abiertas", "todas"]).optional(),
+  estado: z.enum(["abiertas", "cerradas", "todas"]).optional(),
   orden: z.enum(["cierre", "publicacion"]).optional(),
+  dir: z.enum(["asc", "desc"]).optional(),
   page: z.number().int().min(1).optional(),
   suggestionIds: z.array(z.string().uuid()).max(10000).optional(),
 });
@@ -31,8 +32,12 @@ export const searchTenders = createServerFn({ method: "POST" })
     const page = data.page ?? 1;
     let q = sb.from("tenders").select(LIST_COLS, { count: "exact" });
     if (data.suggestionIds) q = q.in("id", data.suggestionIds.length ? data.suggestionIds : ["00000000-0000-0000-0000-000000000000"]);
-    const term = data.q?.replace(/[,()%*\\]/g, " ").trim();
-    if (term) q = q.or(`title.ilike.%${term}%,description.ilike.%${term}%,entity.ilike.%${term}%`);
+    const term = data.q?.replace(/[,()%*\\{}"]/g, " ").trim();
+    if (term) {
+      q = q.or(`title.ilike.%${term}%,description.ilike.%${term}%,entity.ilike.%${term}%,nomenclature.ilike.%${term}%,object_type.ilike.%${term}%`);
+      const regionHits = REGION_OPTIONS.filter((r) => r.toLowerCase().includes(term.toLowerCase()));
+      if (regionHits.length) q = q.overlaps("regions", regionHits);
+    }
     if (data.objeto?.length) q = q.in("object_type", data.objeto);
     if (data.rubro?.length) q = q.overlaps("cubso_segments", data.rubro);
     if (data.region?.length) q = q.overlaps("regions", data.region);
@@ -41,10 +46,13 @@ export const searchTenders = createServerFn({ method: "POST" })
     if (data.moneda) q = q.in("currency", currencyAliases(data.moneda));
     if (data.cierreDesde) q = q.gte("closing_at", `${data.cierreDesde}T00:00:00-05:00`);
     if (data.cierreHasta) q = q.lte("closing_at", `${data.cierreHasta}T23:59:59-05:00`);
-    if ((data.estado ?? "abiertas") === "abiertas") q = q.eq("listed_in_source", true).gt("closing_at", new Date().toISOString());
+    const estado = data.estado ?? "abiertas";
+    if (estado === "abiertas") q = q.eq("listed_in_source", true).gt("closing_at", new Date().toISOString());
+    else if (estado === "cerradas") q = q.lt("closing_at", new Date().toISOString());
+    const asc = data.dir ? data.dir === "asc" : data.orden !== "publicacion";
     q = data.orden === "publicacion"
-      ? q.order("published_at", { ascending: false, nullsFirst: false })
-      : q.order("closing_at", { ascending: true, nullsFirst: false });
+      ? q.order("published_at", { ascending: asc, nullsFirst: false })
+      : q.order("closing_at", { ascending: asc, nullsFirst: false });
     q = q.order("id").range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
     const { data: rows, count, error } = await q;
     if (error) throw new Error("No se pudo consultar el catálogo");
