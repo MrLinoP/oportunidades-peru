@@ -236,7 +236,7 @@ export const analyzeTender = createServerFn({ method: "POST" })
     ]);
     if (!tender) throw new Error("Oportunidad no encontrada");
     if (!profile) throw new Error("Completa primero el perfil en «Mi empresa»");
-    const named = (docs ?? []).filter((d) => d.file_name);
+    const named = (docs ?? []).filter((d) => d.file_name || d.storage_path);
     // Writes go through the service role after verifying the caller; users can only read their own rows.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: job, error: jobErr } = await supabaseAdmin.from("analysis_jobs").insert({
@@ -256,4 +256,34 @@ export const analyzeTender = createServerFn({ method: "POST" })
       await supabaseAdmin.from("analysis_jobs").update({ status: "error", error: String(e?.message ?? e).slice(0, 500) }).eq("id", job.id);
       throw new Error(e?.message ?? "Error en el análisis");
     }
+  });
+
+export const uploadTenderDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => {
+    if (!(d instanceof FormData)) throw new Error("Formulario inválido");
+    const tenderId = z.string().uuid().parse(d.get("tenderId"));
+    const file = d.get("file");
+    if (!(file instanceof File)) throw new Error("Selecciona un archivo PDF");
+    if (file.size > 12 * 1024 * 1024) throw new Error("El PDF supera 12 MB");
+    return { tenderId, file };
+  })
+  .handler(async ({ data, context }) => {
+    const { data: tender } = await context.supabase.from("tenders").select("id").eq("id", data.tenderId).maybeSingle();
+    if (!tender) throw new Error("Oportunidad no encontrada");
+    const buf = new Uint8Array(await data.file.arrayBuffer());
+    if (buf[0] !== 0x25 || buf[1] !== 0x50 || buf[2] !== 0x44 || buf[3] !== 0x46) throw new Error("El archivo no es un PDF válido");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const code = `upload:${crypto.randomUUID()}`;
+    const path = `${tender.id}/${code.slice(7)}.pdf`;
+    const up = await supabaseAdmin.storage.from("tender-documents").upload(path, buf, { contentType: "application/pdf" });
+    if (up.error) throw new Error("No se pudo guardar el PDF");
+    const name = (data.file.name || "bases.pdf").replace(/[^\w .()\-áéíóúñÁÉÍÓÚÑ]/g, "").slice(0, 200) || "bases.pdf";
+    const { error } = await supabaseAdmin.from("documents").insert({
+      tender_id: tender.id, source_code: code, doc_type: "Bases subidas (copia del portal SEACE)", file_name: name,
+      extension: "pdf", size_label: String(Math.round(buf.byteLength / 1024)), stage: "Subido por usuario",
+      published_at: new Date().toISOString(), url: "storage", storage_path: path,
+    });
+    if (error) throw new Error("No se pudo registrar el documento");
+    return { ok: true };
   });

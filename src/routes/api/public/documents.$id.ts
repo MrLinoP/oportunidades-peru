@@ -8,7 +8,11 @@ export const Route = createFileRoute("/api/public/documents/$id")({
       GET: async ({ params }) => {
         if (!/^[0-9a-f-]{36}$/i.test(params.id)) return new Response("No encontrado", { status: 404 });
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: doc } = await supabaseAdmin.from("documents").select("url, file_name").eq("id", params.id).single();
+        const { data: doc } = await supabaseAdmin.from("documents").select("url, file_name, storage_path").eq("id", params.id).single();
+        if (doc?.storage_path) {
+          const { data: signed } = await supabaseAdmin.storage.from("tender-documents").createSignedUrl(doc.storage_path, 300, { download: doc.file_name ?? true });
+          return signed ? Response.redirect(signed.signedUrl, 302) : new Response("No encontrado", { status: 404 });
+        }
         if (!doc || !doc.url.startsWith("https://prod1.seace.gob.pe/")) return new Response("No encontrado", { status: 404 });
         const { seaceFetch } = await import("@/lib/seace.server");
         try {
