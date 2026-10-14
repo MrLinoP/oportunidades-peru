@@ -93,11 +93,11 @@ function OpportunitiesPage() {
   const page = params.page ?? 1;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+    <div className="min-w-0 space-y-4">
+      <div className="grid min-w-0 gap-3 sm:flex sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold">Oportunidades</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="break-words text-sm text-muted-foreground">
             Fuente: <a className="underline" href="https://prod4.seace.gob.pe/openegocio/#/buscar" target="_blank" rel="noreferrer">SEACE – Oportunidades de negocio</a> (bienes, servicios, obras y consultorías vigentes).
           </p>
         </div>
@@ -109,7 +109,7 @@ function OpportunitiesPage() {
         </div>
       )}
 
-      <form role="search" className="flex gap-2" onSubmit={(e) => { e.preventDefault(); set({ q: q.trim() || undefined }); }}>
+      <form role="search" className="grid grid-cols-[minmax(0,1fr)_auto] gap-2" onSubmit={(e) => { e.preventDefault(); set({ q: q.trim() || undefined }); }}>
         <Label htmlFor="q" className="sr-only">Buscar por título, descripción, entidad, nomenclatura, objeto o región</Label>
         <Input id="q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por título, entidad, nomenclatura, objeto o región" />
         <Button type="submit"><Search className="h-4 w-4" aria-hidden />Buscar</Button>
@@ -125,8 +125,8 @@ function OpportunitiesPage() {
       </div>
       {suggestionError && <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">{suggestionError} <Link to="/mi-empresa" className="underline">Mi empresa</Link></div>}
 
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-        <aside aria-label="Filtros" className="rounded-lg border bg-card p-4">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside aria-label="Filtros" className="min-w-0 rounded-lg border bg-card p-4">
           <button
             type="button"
             onClick={() => setFiltersOpen((o) => !o)}
@@ -189,9 +189,9 @@ function OpportunitiesPage() {
           )}
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <p aria-live="polite">{data ? `${data.total.toLocaleString("es-PE")} resultados` : "Cargando…"}{isFetching && data ? " · actualizando…" : ""}</p>
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-2">Ordenar por
-                <select className="h-8 rounded-md border bg-background px-2" value={params.orden ?? "cierre"} onChange={(e) => set({ orden: e.target.value === "cierre" ? undefined : "publicacion" })}>
+            <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:w-auto">
+              <label className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">Ordenar por
+                <select className="h-8 min-w-0 rounded-md border bg-background px-2" value={params.orden ?? "cierre"} onChange={(e) => set({ orden: e.target.value === "cierre" ? undefined : "publicacion" })}>
                   <option value="cierre">Fecha de cierre</option><option value="publicacion">Fecha de publicación</option>
                 </select>
               </label>
@@ -247,13 +247,13 @@ function OpportunitiesPage() {
                   </tbody>
                 </table>
               </div>
-              <ul className="space-y-3 md:hidden">
+              <ul className="min-w-0 space-y-3 md:hidden">
                 {data.rows.map((t) => (
-                  <li key={t.id} className="rounded-lg border bg-card p-4">
-                    <div className="flex items-start justify-between gap-2"><StatusBadge t={t} /><span className="text-xs text-muted-foreground">{t.object_type}</span></div>
-                    <Link to="/oportunidades/$id" params={{ id: t.id }} className="mt-2 block font-medium text-primary hover:underline">{t.title}</Link>
-                    <p className="mt-1 text-xs text-muted-foreground">{t.entity}</p>
-                    <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <li key={t.id} className="min-w-0 rounded-lg border bg-card p-4 [overflow-wrap:anywhere]">
+                    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2"><StatusBadge t={t} /><span className="min-w-0 text-right text-xs text-muted-foreground">{t.object_type}</span></div>
+                    <Link to="/oportunidades/$id" params={{ id: t.id }} className="mt-2 block min-w-0 font-medium text-primary hover:underline">{t.title}</Link>
+                    <p className="mt-1 min-w-0 text-xs text-muted-foreground">{t.entity}</p>
+                    <dl className="mt-3 grid min-w-0 grid-cols-2 gap-2 text-xs [&>div]:min-w-0">
                       <div><dt className="text-muted-foreground">Monto</dt><dd>{formatOpportunityMoney(t.amount, t.currency)}</dd></div>
                       <div><dt className="text-muted-foreground">Publicación</dt><dd>{formatDate(t.published_at)}</dd></div>
                       <div><dt className="text-muted-foreground">Cierre</dt><dd>{formatDate(t.closing_at, t.closing_date_only)}</dd></div>

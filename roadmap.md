@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Compactar navegación móvil en menú hamburguesa con Salir e ícono; tarjetas sin desbordamiento verificadas de 257 a 767 px, navegación y salida probadas con sesión real y menú de escritorio conservado.
 - [x] Actualizar enlace oficial con nomenclatura y año actual; mostrar montos reservados y aclaración legal en listado y detalle (verificado con sesión real y 16 pruebas aprobadas).
 - [x] Formulario "Mi empresa" centrado y a todo el ancho del contenido (margen 1 rem en escritorio, 0,5 rem en celular), secciones con columnas adaptables; verificado en 1440, 1920 y 390 px
 - [x] Textareas de Personal clave/Certificaciones/Disponibilidad/Restricciones con alto base mayor (12 líneas, 360 px en celular), los cuatro iguales y el arrastre para agrandar activo; verificado con sesión real en 390–1920 px
