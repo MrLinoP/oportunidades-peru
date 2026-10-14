@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { X, Search, ExternalLink, Sparkles, LoaderCircle, ChevronLeft, ChevronRight, ChevronDown, SlidersHorizontal } from "lucide-react";
+import { X, Search, ExternalLink, Sparkles, LoaderCircle, ChevronLeft, ChevronRight, ChevronDown, SlidersHorizontal, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -109,8 +109,8 @@ function OpportunitiesPage() {
       )}
 
       <form role="search" className="flex gap-2" onSubmit={(e) => { e.preventDefault(); set({ q: q.trim() || undefined }); }}>
-        <Label htmlFor="q" className="sr-only">Buscar por título, descripción o entidad</Label>
-        <Input id="q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por título, descripción o entidad" />
+        <Label htmlFor="q" className="sr-only">Buscar por título, descripción, entidad, nomenclatura, objeto o región</Label>
+        <Input id="q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por título, entidad, nomenclatura, objeto o región" />
         <Button type="submit"><Search className="h-4 w-4" aria-hidden />Buscar</Button>
       </form>
 
@@ -145,10 +145,10 @@ function OpportunitiesPage() {
           <div id="filtros-contenido" className={filtersOpen ? "mt-4 space-y-5 lg:mt-0" : "hidden space-y-5 lg:mt-0 lg:block"}>
           <fieldset className="space-y-1.5">
             <legend className="text-sm font-medium">Estado</legend>
-            {(["abiertas", "todas"] as const).map((v) => (
+            {(["abiertas", "cerradas", "todas"] as const).map((v) => (
               <label key={v} className="flex items-center gap-2 text-sm">
                 <input type="radio" name="estado" checked={(params.estado ?? "abiertas") === v} onChange={() => set({ estado: v === "abiertas" ? undefined : v })} />
-                {v === "abiertas" ? "Solo abiertas (cierre futuro)" : "Todas, incluidas cerradas y por confirmar"}
+                {v === "abiertas" ? "Solo abiertas (cierre futuro)" : v === "cerradas" ? "Cerradas (cierre pasado)" : "Todas, incluidas cerradas y por confirmar"}
               </label>
             ))}
           </fieldset>
@@ -188,11 +188,29 @@ function OpportunitiesPage() {
           )}
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <p aria-live="polite">{data ? `${data.total.toLocaleString("es-PE")} resultados` : "Cargando…"}{isFetching && data ? " · actualizando…" : ""}</p>
-            <label className="flex items-center gap-2">Ordenar por
-              <select className="h-8 rounded-md border bg-background px-2" value={params.orden ?? "cierre"} onChange={(e) => set({ orden: e.target.value === "cierre" ? undefined : "publicacion" })}>
-                <option value="cierre">Cierre más próximo</option><option value="publicacion">Publicación más reciente</option>
-              </select>
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2">Ordenar por
+                <select className="h-8 rounded-md border bg-background px-2" value={params.orden ?? "cierre"} onChange={(e) => set({ orden: e.target.value === "cierre" ? undefined : "publicacion" })}>
+                  <option value="cierre">Fecha de cierre</option><option value="publicacion">Fecha de publicación</option>
+                </select>
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 px-2"
+                aria-label={(params.dir ?? (params.orden === "publicacion" ? "desc" : "asc")) === "asc" ? "Cambiar a orden descendente" : "Cambiar a orden ascendente"}
+                title={(params.dir ?? (params.orden === "publicacion" ? "desc" : "asc")) === "asc" ? "Ascendente" : "Descendente"}
+                onClick={() => {
+                  const current = params.dir ?? (params.orden === "publicacion" ? "desc" : "asc");
+                  set({ dir: current === "asc" ? "desc" : "asc" });
+                }}
+              >
+                {(params.dir ?? (params.orden === "publicacion" ? "desc" : "asc")) === "asc"
+                  ? <ArrowUp className="h-4 w-4" aria-hidden />
+                  : <ArrowDown className="h-4 w-4" aria-hidden />}
+              </Button>
+            </div>
           </div>
 
           {isError && <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm">No se pudo cargar el catálogo. <Button size="sm" variant="outline" onClick={() => refetch()}>Reintentar</Button></div>}
@@ -203,7 +221,7 @@ function OpportunitiesPage() {
               <div className="hidden overflow-x-auto rounded-lg border bg-card md:block">
                 <table className="w-full text-sm">
                   <thead className="bg-muted text-left text-xs uppercase text-muted-foreground">
-                    <tr><th className="p-3">Oportunidad</th><th className="p-3">Objeto</th><th className="p-3">Monto</th><th className="p-3">Región</th><th className="p-3">Cierre</th><th className="p-3">Estado</th><th className="p-3"><span className="sr-only">Acciones</span></th></tr>
+                    <tr><th className="p-3">Oportunidad</th><th className="p-3">Objeto</th><th className="p-3">Monto</th><th className="p-3">Región</th><th className="p-3">Publicación</th><th className="p-3">Cierre</th><th className="p-3">Estado</th><th className="p-3"><span className="sr-only">Acciones</span></th></tr>
                   </thead>
                   <tbody>
                     {data.rows.map((t) => (
@@ -215,6 +233,7 @@ function OpportunitiesPage() {
                         <td className="p-3">{t.object_type}<p className="text-xs text-muted-foreground">{t.procedure_type}</p></td>
                         <td className="whitespace-nowrap p-3">{formatMoney(t.amount, t.currency)}</td>
                         <td className="p-3 text-xs">{t.regions.join(", ") || "No informado"}</td>
+                        <td className="whitespace-nowrap p-3">{formatDate(t.published_at)}</td>
                         <td className="whitespace-nowrap p-3">{formatDate(t.closing_at, t.closing_date_only)}</td>
                         <td className="p-3"><StatusBadge t={t} /></td>
                         <td className="p-3"><SaveButton tenderId={t.id} saved={t.saved} /></td>
@@ -231,6 +250,7 @@ function OpportunitiesPage() {
                     <p className="mt-1 text-xs text-muted-foreground">{t.entity}</p>
                     <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
                       <div><dt className="text-muted-foreground">Monto</dt><dd>{formatMoney(t.amount, t.currency)}</dd></div>
+                      <div><dt className="text-muted-foreground">Publicación</dt><dd>{formatDate(t.published_at)}</dd></div>
                       <div><dt className="text-muted-foreground">Cierre</dt><dd>{formatDate(t.closing_at, t.closing_date_only)}</dd></div>
                       <div className="col-span-2"><dt className="text-muted-foreground">Región</dt><dd>{t.regions.join(", ")}</dd></div>
                     </dl>
