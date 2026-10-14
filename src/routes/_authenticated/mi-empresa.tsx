@@ -288,7 +288,11 @@ function ProfilePage() {
               <Label htmlFor={k}>{l}</Label>
               <Textarea
                 id={k}
-                className="h-48 min-h-48 resize-y"
+                style={{
+                  height: "192px",
+                  minHeight: "192px",
+                  resize: "vertical",
+                }}
                 value={(f[k] as string) ?? ""}
                 onChange={(e) => up(k, e.target.value)}
               />
