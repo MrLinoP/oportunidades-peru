@@ -68,14 +68,21 @@ export async function runAnalysis(input: { tender: any; items: any[]; documents:
   if (!key) throw new Error("Falta configurar la clave de OpenAI");
   const model = process.env["OPENAI_MODEL"] || "gpt-4.1-mini";
 
-  const pdfDocs = input.documents.filter((d) => !d.extension || /pdf/i.test(d.extension)).slice(-MAX_DOCS);
+  const pdfAll = input.documents.filter((d) => !d.extension || /pdf/i.test(d.extension));
+  // Uploaded copies first (SEACE often blocks server downloads with 403), then the latest official ones.
+  const pdfDocs = [...pdfAll.filter((d) => d.storage_path), ...pdfAll.filter((d) => !d.storage_path).reverse()];
   const files: { name: string; data: string }[] = [];
+  const failed: string[] = [];
   for (const d of pdfDocs) {
+    if (files.length >= MAX_DOCS) break;
+    const name = d.file_name ?? d.doc_type ?? "documento.pdf";
     try {
-      const data = await fetchPdf(d.url ?? DOC_URL + d.source_code);
-      if (data) files.push({ name: d.file_name ?? d.doc_type ?? "documento.pdf", data });
-    } catch { /* documento no disponible */ }
+      const data = d.storage_path ? await fetchStored(d.storage_path) : await fetchPdf(d.url ?? DOC_URL + d.source_code);
+      if (data) files.push({ name, data }); else failed.push(name);
+    } catch { failed.push(name); }
   }
+  input.documents = input.documents; // keep signature
+  (globalThis as any).__lastFailedDocs = undefined;
 
   const t = input.tender;
   const facts = {
