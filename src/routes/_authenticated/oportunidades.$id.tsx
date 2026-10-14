@@ -2,10 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowLeft, Download, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
+import { ArrowLeft, Upload, Download, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { analyzeTender, getTender } from "@/lib/tenders.functions";
+import { analyzeTender, getTender, uploadTenderDocument } from "@/lib/tenders.functions";
 import { toast } from "sonner";
 import { formatDate, formatMoney, currencyDescription, formatStageRange } from "@/lib/tender-rules";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
@@ -122,7 +122,8 @@ function DetailPage() {
             </ul>
           </section>
         </TabsContent>
-        <TabsContent value="documentos">
+        <TabsContent value="documentos" className="space-y-4">
+          <UploadBox tenderId={t.id} onDone={async () => { const r = await fn({ data: { id } }); qc.setQueryData(["tender", id], r); }} />
           <section className="rounded-lg border bg-card p-5">
             {documents.length === 0 ? <p className="text-sm text-muted-foreground">SEACE no publica documentos para esta oportunidad todavía.</p> : (
               <ul className="space-y-3">
@@ -167,6 +168,7 @@ function AnalysisPanel({ analysis, analyzing, error, outdated }: { analysis: any
             <div className="text-3xl font-semibold">{analysis.score}<span className="text-base text-muted-foreground">/100</span></div>
             <div><p className="font-medium">{REC[r.recommendation] ?? r.recommendation}</p><p className="text-xs text-muted-foreground">Analizado el {formatDate(analysis.created_at)}{r.documents_used?.length ? ` · Bases leídas: ${r.documents_used.join(", ")}` : " · Sin bases en PDF, solo datos oficiales"}</p></div>
           </div>
+          {!r.documents_used?.length && <p role="status" className="rounded-md border border-warning/40 bg-warning/10 p-3">SEACE bloqueó la descarga automática de las bases, así que este análisis solo usó los datos de la ficha. Descarga el PDF en la pestaña «Documentos», súbelo ahí mismo y vuelve a analizar.</p>}
           {outdated && <p role="status" className="font-medium text-warning">La oportunidad cambió desde este análisis. Conviene volver a analizar.</p>}
           <p>{r.summary}</p>
           {r.requirements?.length > 0 && (
@@ -192,6 +194,30 @@ function AnalysisPanel({ analysis, analyzing, error, outdated }: { analysis: any
           <p className="text-xs text-muted-foreground">Análisis automático orientativo; no constituye asesoría legal. Verifica siempre en las bases oficiales.</p>
         </>
       )}
+    </section>
+  );
+}
+
+function UploadBox({ tenderId, onDone }: { tenderId: string; onDone: () => Promise<void> }) {
+  const upload = useServerFn(uploadTenderDocument);
+  const [busy, setBusy] = useState(false);
+  return (
+    <section className="rounded-lg border border-dashed bg-card p-5 text-sm">
+      <p className="font-medium">¿El análisis no leyó las bases?</p>
+      <p className="mt-1 text-muted-foreground">SEACE a veces impide que nuestro servidor descargue los archivos. Descarga las bases con el botón «Descargar» y súbelas aquí (PDF, máx. 12 MB); el próximo análisis las leerá primero.</p>
+      <label className="mt-3 inline-flex">
+        <input type="file" accept="application/pdf,.pdf" className="sr-only" disabled={busy} onChange={async (e) => {
+          const file = e.target.files?.[0]; e.target.value = "";
+          if (!file) return;
+          setBusy(true);
+          try {
+            const fd = new FormData(); fd.append("tenderId", tenderId); fd.append("file", file);
+            await upload({ data: fd }); await onDone(); toast.success("Bases subidas. Ya puedes volver a analizar.");
+          } catch (err: any) { toast.error(err?.message ?? "No se pudo subir el PDF"); }
+          finally { setBusy(false); }
+        }} />
+        <span className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-secondary px-3 py-2 font-medium text-secondary-foreground hover:bg-secondary/80"><Upload className="h-4 w-4" aria-hidden />{busy ? "Subiendo…" : "Subir bases en PDF"}</span>
+      </label>
     </section>
   );
 }
