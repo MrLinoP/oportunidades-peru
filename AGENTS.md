@@ -19,3 +19,4 @@
 - Platform colors and motion are centralized in global semantic tokens and shared controls, with reduced-motion overrides — keeps every page consistent without changing business flows.
 - Lightweight recommendations run in suggestions.server.ts with the existing Analyze model configuration, authenticated profile reads and paginated catalogue batches; returned real IDs intersect normal search filters before pagination — avoids document downloads, cross-account reads and first-page-only matching.
 - Numbered pagination uses the pure helper in src/lib/pagination.ts with boundary tests — keeps visible page ranges deduplicated and within the catalogue bounds.
+- User-uploaded bases go to private storage bucket tender-documents via service role and are read first by analysis — SEACE blocks server-side document downloads (403).
