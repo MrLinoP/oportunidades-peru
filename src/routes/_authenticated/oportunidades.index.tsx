@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { X, Search, ExternalLink, Sparkles, LoaderCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Search, ExternalLink, Sparkles, LoaderCircle, ChevronLeft, ChevronRight, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +53,7 @@ function OpportunitiesPage() {
   const options = useServerFn(getFilterOptions);
   const suggest = useServerFn(suggestTenders);
   const [suggestions, setSuggestions] = useState<{ ids: string[]; reviewed: number; estado: string } | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const activeSuggestions = suggestions?.estado === (params.estado ?? "abiertas") ? suggestions : null;
@@ -124,7 +125,24 @@ function OpportunitiesPage() {
       {suggestionError && <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">{suggestionError} <Link to="/mi-empresa" className="underline">Mi empresa</Link></div>}
 
       <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-        <aside aria-label="Filtros" className="space-y-5 rounded-lg border bg-card p-4">
+        <aside aria-label="Filtros" className="rounded-lg border bg-card p-4">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((o) => !o)}
+            aria-expanded={filtersOpen}
+            aria-controls="filtros-contenido"
+            className="flex w-full items-center justify-between lg:hidden"
+          >
+            <span className="flex items-center gap-2 text-sm font-medium">
+              <SlidersHorizontal className="h-4 w-4" aria-hidden />
+              Filtros
+              {chips.length > 0 && (
+                <span className="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">{chips.length}</span>
+              )}
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform motion-reduce:transition-none ${filtersOpen ? "rotate-180" : ""}`} aria-hidden />
+          </button>
+          <div id="filtros-contenido" className={filtersOpen ? "mt-4 space-y-5 lg:mt-0" : "hidden space-y-5 lg:mt-0 lg:block"}>
           <fieldset className="space-y-1.5">
             <legend className="text-sm font-medium">Estado</legend>
             {(["abiertas", "todas"] as const).map((v) => (
