@@ -12,6 +12,7 @@ export type AnalysisResult = {
   missing_info: string[];
   action_plan: { action: string; addresses: string; category: string; priority: "alta" | "media" | "baja"; detail: string }[];
   documents_used: string[];
+  documents_failed?: string[];
 };
 
 const schema = {
@@ -63,18 +64,36 @@ async function fetchPdf(url: string): Promise<string | null> {
   return btoa(bin);
 }
 
+function toBase64(buf: Uint8Array): string {
+  let bin = "";
+  for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+async function fetchStored(path: string): Promise<string | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin.storage.from("tender-documents").download(path);
+  if (error || !data) return null;
+  return toBase64(new Uint8Array(await data.arrayBuffer()));
+}
+
 export async function runAnalysis(input: { tender: any; items: any[]; documents: any[]; profile: any }): Promise<AnalysisResult> {
   const key = process.env["OPENAI_API_KEY"];
   if (!key) throw new Error("Falta configurar la clave de OpenAI");
   const model = process.env["OPENAI_MODEL"] || "gpt-4.1-mini";
 
-  const pdfDocs = input.documents.filter((d) => !d.extension || /pdf/i.test(d.extension)).slice(-MAX_DOCS);
+  const pdfAll = input.documents.filter((d) => !d.extension || /pdf/i.test(d.extension));
+  // Uploaded copies first (SEACE often blocks server downloads with 403), then the latest official ones.
+  const pdfDocs = [...pdfAll.filter((d) => d.storage_path), ...pdfAll.filter((d) => !d.storage_path).reverse()];
   const files: { name: string; data: string }[] = [];
+  const failed: string[] = [];
   for (const d of pdfDocs) {
+    if (files.length >= MAX_DOCS) break;
+    const name = d.file_name ?? d.doc_type ?? "documento.pdf";
     try {
-      const data = await fetchPdf(d.url ?? DOC_URL + d.source_code);
-      if (data) files.push({ name: d.file_name ?? d.doc_type ?? "documento.pdf", data });
-    } catch { /* documento no disponible */ }
+      const data = d.storage_path ? await fetchStored(d.storage_path) : await fetchPdf(d.url ?? DOC_URL + d.source_code);
+      if (data) files.push({ name, data }); else failed.push(name);
+    } catch { failed.push(name); }
   }
 
   const t = input.tender;
@@ -95,7 +114,7 @@ Reglas: responde en español; usa SOLO los datos oficiales y las bases adjuntas;
 Plan de acción (action_plan): por cada requisito en "no_cumple" o "por_verificar", propone acciones concretas y realistas en el contexto de compras públicas peruanas (Ley 32069 y su reglamento): p. ej. obtener o ampliar inscripción en el RNP (bienes, servicios, ejecutor/consultor de obras), tramitar certificaciones (ISO, sanitarias, licencias), incorporar perfiles técnicos o personal clave, acreditar experiencia con contratos/conformidades, formar consorcio o alianza con empresas que aporten la brecha, o reunir documentación. Indica prioridad y si es viable antes del cierre según el cronograma. No inventes requisitos; si todo cumple, devuelve una lista vacía o acciones de verificación.`;
 
   const content: any[] = [
-    { type: "input_text", text: `DATOS OFICIALES SEACE:\n${JSON.stringify(facts)}\n\nPERFIL DE LA EMPRESA:\n${JSON.stringify(perfil)}\n\n${files.length ? `Bases adjuntas: ${files.map((f) => f.name).join(", ")}` : "No se pudieron obtener bases en PDF; analiza solo con los datos oficiales e indícalo."}` },
+    { type: "input_text", text: `DATOS OFICIALES SEACE:\n${JSON.stringify(facts)}\n\nPERFIL DE LA EMPRESA:\n${JSON.stringify(perfil)}\n\n${files.length ? `Bases adjuntas: ${files.map((f) => f.name).join(", ")}` : "No se pudieron obtener bases en PDF; analiza solo con los datos oficiales e indícalo."}${failed.length ? `\nDocumentos que SEACE no permitió descargar: ${failed.join(", ")}` : ""}` },
     ...files.map((f) => ({ type: "input_file", filename: f.name.endsWith(".pdf") ? f.name : `${f.name}.pdf`, file_data: `data:application/pdf;base64,${f.data}` })),
   ];
 
@@ -119,5 +138,5 @@ Plan de acción (action_plan): por cada requisito en "no_cumple" o "por_verifica
   if (!text) throw new Error("OpenAI no devolvió resultado");
   const parsed = JSON.parse(text);
   parsed.score = Math.max(0, Math.min(100, Math.round(Number(parsed.score) || 0)));
-  return { ...parsed, documents_used: files.map((f) => f.name) };
+  return { ...parsed, documents_used: files.map((f) => f.name), documents_failed: failed };
 }
