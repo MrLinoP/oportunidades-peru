@@ -21,9 +21,7 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Página no encontrada</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          La página no existe o fue movida.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">La página no existe o fue movida.</p>
         <div className="mt-6">
           <Link
             to="/"
@@ -47,12 +45,8 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          No se pudo cargar la página
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Ocurrió un error. Puedes reintentar o volver al inicio.
-        </p>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">No se pudo cargar la página</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Ocurrió un error. Puedes reintentar o volver al inicio.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -94,7 +88,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -134,7 +131,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
-      <Toaster richColors position="top-right" offset="72px" />
+      <Toaster richColors position="bottom-right" offset="72px" />
     </QueryClientProvider>
   );
 }
