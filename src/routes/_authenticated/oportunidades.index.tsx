@@ -174,6 +174,7 @@ function OpportunitiesPage() {
             <Label htmlFor="ch" className="text-xs">Hasta</Label>
             <Input id="ch" type="date" value={params.cierreHasta ?? ""} onChange={(e) => set({ cierreHasta: e.target.value || undefined })} />
           </fieldset>
+          </div>
         </aside>
 
         <section aria-label="Resultados" className="min-w-0 space-y-3">
