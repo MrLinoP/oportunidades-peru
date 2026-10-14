@@ -12,6 +12,7 @@ export type AnalysisResult = {
   missing_info: string[];
   action_plan: { action: string; addresses: string; category: string; priority: "alta" | "media" | "baja"; detail: string }[];
   documents_used: string[];
+  documents_failed?: string[];
 };
 
 const schema = {
@@ -113,7 +114,7 @@ Reglas: responde en español; usa SOLO los datos oficiales y las bases adjuntas;
 Plan de acción (action_plan): por cada requisito en "no_cumple" o "por_verificar", propone acciones concretas y realistas en el contexto de compras públicas peruanas (Ley 32069 y su reglamento): p. ej. obtener o ampliar inscripción en el RNP (bienes, servicios, ejecutor/consultor de obras), tramitar certificaciones (ISO, sanitarias, licencias), incorporar perfiles técnicos o personal clave, acreditar experiencia con contratos/conformidades, formar consorcio o alianza con empresas que aporten la brecha, o reunir documentación. Indica prioridad y si es viable antes del cierre según el cronograma. No inventes requisitos; si todo cumple, devuelve una lista vacía o acciones de verificación.`;
 
   const content: any[] = [
-    { type: "input_text", text: `DATOS OFICIALES SEACE:\n${JSON.stringify(facts)}\n\nPERFIL DE LA EMPRESA:\n${JSON.stringify(perfil)}\n\n${files.length ? `Bases adjuntas: ${files.map((f) => f.name).join(", ")}` : "No se pudieron obtener bases en PDF; analiza solo con los datos oficiales e indícalo."}` },
+    { type: "input_text", text: `DATOS OFICIALES SEACE:\n${JSON.stringify(facts)}\n\nPERFIL DE LA EMPRESA:\n${JSON.stringify(perfil)}\n\n${files.length ? `Bases adjuntas: ${files.map((f) => f.name).join(", ")}` : "No se pudieron obtener bases en PDF; analiza solo con los datos oficiales e indícalo."}${failed.length ? `\nDocumentos que SEACE no permitió descargar: ${failed.join(", ")}` : ""}` },
     ...files.map((f) => ({ type: "input_file", filename: f.name.endsWith(".pdf") ? f.name : `${f.name}.pdf`, file_data: `data:application/pdf;base64,${f.data}` })),
   ];
 
@@ -137,5 +138,5 @@ Plan de acción (action_plan): por cada requisito en "no_cumple" o "por_verifica
   if (!text) throw new Error("OpenAI no devolvió resultado");
   const parsed = JSON.parse(text);
   parsed.score = Math.max(0, Math.min(100, Math.round(Number(parsed.score) || 0)));
-  return { ...parsed, documents_used: files.map((f) => f.name) };
+  return { ...parsed, documents_used: files.map((f) => f.name), documents_failed: failed };
 }
