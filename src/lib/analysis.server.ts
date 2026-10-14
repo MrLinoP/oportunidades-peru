@@ -10,12 +10,13 @@ export type AnalysisResult = {
   requirements: { requirement: string; status: "cumple" | "no_cumple" | "por_verificar"; reason: string; evidence: string; source: string }[];
   risks: string[];
   missing_info: string[];
+  action_plan: { action: string; addresses: string; category: string; priority: "alta" | "media" | "baja"; detail: string }[];
   documents_used: string[];
 };
 
 const schema = {
   type: "object", additionalProperties: false,
-  required: ["score", "recommendation", "summary", "requirements", "risks", "missing_info"],
+  required: ["score", "recommendation", "summary", "requirements", "risks", "missing_info", "action_plan"],
   properties: {
     score: { type: "integer", description: "0-100 compatibilidad empresa-oportunidad" },
     recommendation: { type: "string", enum: ["participar", "evaluar", "no_participar"] },
@@ -35,6 +36,20 @@ const schema = {
     },
     risks: { type: "array", items: { type: "string" } },
     missing_info: { type: "array", items: { type: "string" } },
+    action_plan: {
+      type: "array", description: "Acciones concretas para cerrar brechas de requisitos no_cumple o por_verificar",
+      items: {
+        type: "object", additionalProperties: false,
+        required: ["action", "addresses", "category", "priority", "detail"],
+        properties: {
+          action: { type: "string", description: "Acción concreta y realista" },
+          addresses: { type: "string", description: "Requisito o brecha que resuelve" },
+          category: { type: "string", enum: ["certificacion", "rnp", "personal", "experiencia", "consorcio_alianza", "capacidad_financiera", "documentacion", "otro"] },
+          priority: { type: "string", enum: ["alta", "media", "baja"] },
+          detail: { type: "string", description: "Cómo hacerlo y si es viable antes del cierre" },
+        },
+      },
+    },
   },
 };
 
@@ -76,7 +91,8 @@ export async function runAnalysis(input: { tender: any; items: any[]; documents:
   } : null;
 
   const instructions = `Eres analista de contrataciones públicas del Perú. Evalúa si la empresa (perfil autodeclarado) puede competir en esta oportunidad.
-Reglas: responde en español; usa SOLO los datos oficiales y las bases adjuntas; cada requisito debe tener evidencia textual y su fuente (documento y página/sección o "Datos SEACE"). Si algo no consta, marca "por_verificar" y no lo inventes. No das asesoría legal. Puntaje 0-100.`;
+Reglas: responde en español; usa SOLO los datos oficiales y las bases adjuntas; cada requisito debe tener evidencia textual y su fuente (documento y página/sección o "Datos SEACE"). Si algo no consta, marca "por_verificar" y no lo inventes. No das asesoría legal. Puntaje 0-100.
+Plan de acción (action_plan): por cada requisito en "no_cumple" o "por_verificar", propone acciones concretas y realistas en el contexto de compras públicas peruanas (Ley 32069 y su reglamento): p. ej. obtener o ampliar inscripción en el RNP (bienes, servicios, ejecutor/consultor de obras), tramitar certificaciones (ISO, sanitarias, licencias), incorporar perfiles técnicos o personal clave, acreditar experiencia con contratos/conformidades, formar consorcio o alianza con empresas que aporten la brecha, o reunir documentación. Indica prioridad y si es viable antes del cierre según el cronograma. No inventes requisitos; si todo cumple, devuelve una lista vacía o acciones de verificación.`;
 
   const content: any[] = [
     { type: "input_text", text: `DATOS OFICIALES SEACE:\n${JSON.stringify(facts)}\n\nPERFIL DE LA EMPRESA:\n${JSON.stringify(perfil)}\n\n${files.length ? `Bases adjuntas: ${files.map((f) => f.name).join(", ")}` : "No se pudieron obtener bases en PDF; analiza solo con los datos oficiales e indícalo."}` },

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedAnalizadasRouteImport } from './routes/_authenticated/analizadas'
 import { Route as AuthenticatedGuardadasRouteImport } from './routes/_authenticated/guardadas'
 import { Route as AuthenticatedMiEmpresaRouteImport } from './routes/_authenticated/mi-empresa'
 import { Route as AuthenticatedOportunidadesRouteImport } from './routes/_authenticated/oportunidades'
@@ -39,6 +40,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAnalizadasRoute = AuthenticatedAnalizadasRouteImport.update({
+  id: '/analizadas',
+  path: '/analizadas',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedGuardadasRoute = AuthenticatedGuardadasRouteImport.update({
   id: '/guardadas',
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/analizadas': typeof AuthenticatedAnalizadasRoute
   '/guardadas': typeof AuthenticatedGuardadasRoute
   '/mi-empresa': typeof AuthenticatedMiEmpresaRoute
   '/oportunidades': typeof AuthenticatedOportunidadesRouteWithChildren
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/analizadas': typeof AuthenticatedAnalizadasRoute
   '/guardadas': typeof AuthenticatedGuardadasRoute
   '/mi-empresa': typeof AuthenticatedMiEmpresaRoute
   '/oportunidades/$id': typeof AuthenticatedOportunidadesIdRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/analizadas': typeof AuthenticatedAnalizadasRoute
   '/_authenticated/guardadas': typeof AuthenticatedGuardadasRoute
   '/_authenticated/mi-empresa': typeof AuthenticatedMiEmpresaRoute
   '/_authenticated/oportunidades': typeof AuthenticatedOportunidadesRouteWithChildren
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/analizadas'
     | '/guardadas'
     | '/mi-empresa'
     | '/oportunidades'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/analizadas'
     | '/guardadas'
     | '/mi-empresa'
     | '/oportunidades/$id'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/analizadas'
     | '/_authenticated/guardadas'
     | '/_authenticated/mi-empresa'
     | '/_authenticated/oportunidades'
@@ -193,6 +205,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/analizadas': {
+      id: '/_authenticated/analizadas'
+      path: '/analizadas'
+      fullPath: '/analizadas'
+      preLoaderRoute: typeof AuthenticatedAnalizadasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/guardadas': {
       id: '/_authenticated/guardadas'
@@ -263,12 +282,14 @@ const AuthenticatedOportunidadesRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAnalizadasRoute: typeof AuthenticatedAnalizadasRoute
   AuthenticatedGuardadasRoute: typeof AuthenticatedGuardadasRoute
   AuthenticatedMiEmpresaRoute: typeof AuthenticatedMiEmpresaRoute
   AuthenticatedOportunidadesRoute: typeof AuthenticatedOportunidadesRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAnalizadasRoute: AuthenticatedAnalizadasRoute,
   AuthenticatedGuardadasRoute: AuthenticatedGuardadasRoute,
   AuthenticatedMiEmpresaRoute: AuthenticatedMiEmpresaRoute,
   AuthenticatedOportunidadesRoute: AuthenticatedOportunidadesRouteWithChildren,

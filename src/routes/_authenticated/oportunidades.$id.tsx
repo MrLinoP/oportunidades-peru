@@ -42,7 +42,7 @@ function DetailPage() {
     try {
       const a = await analyzeFn({ data: { tenderId: id } });
       qc.setQueryData(["tender", id], (old: any) => old ? { ...old, analysis: a } : old);
-      qc.invalidateQueries({ queryKey: ["saved"] });
+      qc.invalidateQueries({ queryKey: ["saved"] }); qc.invalidateQueries({ queryKey: ["analyzed"] });
       toast.success("Análisis listo");
     } catch (e: any) { setAnalyzeError(e?.message ?? "No se pudo analizar"); }
     finally { setAnalyzing(false); }
@@ -179,6 +179,15 @@ function AnalysisPanel({ analysis, analyzing, error, outdated }: { analysis: any
                 </li>))}</ul>
             </div>)}
           {r.risks?.length > 0 && <div><h3 className="mb-1 font-semibold">Riesgos</h3><ul className="list-disc pl-5">{r.risks.map((x: string, i: number) => <li key={i}>{x}</li>)}</ul></div>}
+          {r.action_plan?.length > 0 && (
+            <div><h3 className="mb-2 font-semibold">Plan de acción sugerido</h3>
+              <ul className="space-y-3">{r.action_plan.map((x: any, i: number) => (
+                <li key={i} className="rounded-md border p-3">
+                  <div className="flex flex-wrap items-center gap-2"><span className={`rounded px-2 py-0.5 text-xs font-medium ${x.priority === "alta" ? "bg-destructive/15 text-destructive" : x.priority === "media" ? "bg-warning/15 text-warning" : "bg-muted text-muted-foreground"}`}>Prioridad {x.priority}</span><span className="font-medium">{x.action}</span></div>
+                  <p className="mt-1 text-xs text-muted-foreground">Resuelve: {x.addresses}</p>
+                  <p className="mt-1">{x.detail}</p>
+                </li>))}</ul>
+            </div>)}
           {r.missing_info?.length > 0 && <div><h3 className="mb-1 font-semibold">Información faltante</h3><ul className="list-disc pl-5">{r.missing_info.map((x: string, i: number) => <li key={i}>{x}</li>)}</ul></div>}
           <p className="text-xs text-muted-foreground">Análisis automático orientativo; no constituye asesoría legal. Verifica siempre en las bases oficiales.</p>
         </>
