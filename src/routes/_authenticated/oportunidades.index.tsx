@@ -221,7 +221,7 @@ function OpportunitiesPage() {
               <div className="hidden overflow-x-auto rounded-lg border bg-card md:block">
                 <table className="w-full text-sm">
                   <thead className="bg-muted text-left text-xs uppercase text-muted-foreground">
-                    <tr><th className="p-3">Oportunidad</th><th className="p-3">Objeto</th><th className="p-3">Monto</th><th className="p-3">Región</th><th className="p-3">Publicación</th><th className="p-3">Cierre</th><th className="p-3">Estado</th><th className="p-3"><span className="sr-only">Acciones</span></th></tr>
+                    <tr><th className="p-3">Oportunidad</th><th className="p-3">Objeto</th><th className="p-3">Monto</th><th className="p-3">Región</th><th className="p-3">Fechas</th><th className="p-3">Estado</th><th className="p-3"><span className="sr-only">Acciones</span></th></tr>
                   </thead>
                   <tbody>
                     {data.rows.map((t) => (
@@ -233,8 +233,12 @@ function OpportunitiesPage() {
                         <td className="p-3">{t.object_type}<p className="text-xs text-muted-foreground">{t.procedure_type}</p></td>
                         <td className="whitespace-nowrap p-3">{formatMoney(t.amount, t.currency)}</td>
                         <td className="p-3 text-xs">{t.regions.join(", ") || "No informado"}</td>
-                        <td className="whitespace-nowrap p-3">{formatDate(t.published_at)}</td>
-                        <td className="whitespace-nowrap p-3">{formatDate(t.closing_at, t.closing_date_only)}</td>
+                        <td className="whitespace-nowrap p-0 text-xs">
+                          <div className="flex h-full flex-col divide-y">
+                            <div className="px-3 py-2"><span className="block text-[10px] font-semibold uppercase text-muted-foreground">Publicación</span>{formatDate(t.published_at)}</div>
+                            <div className="px-3 py-2"><span className="block text-[10px] font-semibold uppercase text-muted-foreground">Cierre</span>{formatDate(t.closing_at, t.closing_date_only)}</div>
+                          </div>
+                        </td>
                         <td className="p-3"><StatusBadge t={t} /></td>
                         <td className="p-3"><SaveButton tenderId={t.id} saved={t.saved} /></td>
                       </tr>
