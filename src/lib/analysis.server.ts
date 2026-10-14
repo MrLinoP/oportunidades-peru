@@ -63,6 +63,19 @@ async function fetchPdf(url: string): Promise<string | null> {
   return btoa(bin);
 }
 
+function toBase64(buf: Uint8Array): string {
+  let bin = "";
+  for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+async function fetchStored(path: string): Promise<string | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin.storage.from("tender-documents").download(path);
+  if (error || !data) return null;
+  return toBase64(new Uint8Array(await data.arrayBuffer()));
+}
+
 export async function runAnalysis(input: { tender: any; items: any[]; documents: any[]; profile: any }): Promise<AnalysisResult> {
   const key = process.env["OPENAI_API_KEY"];
   if (!key) throw new Error("Falta configurar la clave de OpenAI");
@@ -81,8 +94,6 @@ export async function runAnalysis(input: { tender: any; items: any[]; documents:
       if (data) files.push({ name, data }); else failed.push(name);
     } catch { failed.push(name); }
   }
-  input.documents = input.documents; // keep signature
-  (globalThis as any).__lastFailedDocs = undefined;
 
   const t = input.tender;
   const facts = {
