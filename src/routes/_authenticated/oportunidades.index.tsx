@@ -12,6 +12,7 @@ import { OBJECT_TYPES, REGION_OPTIONS, formatDate, formatOpportunityMoney, curre
 import { ReservedAmountNote } from "@/components/reserved-amount-note";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
 import { paginationPages } from "@/lib/pagination";
+import { FilterCategory } from "@/components/filter-category";
 
 export const Route = createFileRoute("/_authenticated/oportunidades/")({
   validateSearch: (s) => searchSchema.parse(s),
@@ -30,8 +31,9 @@ export const Route = createFileRoute("/_authenticated/oportunidades/")({
 
 function MultiCheck({ legend, options, value, onChange }: { legend: string; options: { v: string; l: string }[]; value: string[]; onChange: (v: string[]) => void }) {
   return (
+    <FilterCategory title={legend} count={value.length}>
     <fieldset className="space-y-1.5">
-      <legend className="text-sm font-medium">{legend}</legend>
+      <legend className="sr-only text-sm font-medium lg:not-sr-only">{legend}</legend>
       <div className="max-h-44 space-y-1 overflow-y-auto pr-1">
         {options.map((o) => {
           const id = `${legend}-${o.v}`;
@@ -44,6 +46,7 @@ function MultiCheck({ legend, options, value, onChange }: { legend: string; opti
         })}
       </div>
     </fieldset>
+    </FilterCategory>
   );
 }
 
@@ -127,12 +130,13 @@ function OpportunitiesPage() {
 
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside aria-label="Filtros" className="min-w-0 rounded-lg border bg-card p-4">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setFiltersOpen((o) => !o)}
             aria-expanded={filtersOpen}
             aria-controls="filtros-contenido"
-            className="flex w-full items-center justify-between lg:hidden"
+            className="flex h-auto w-full items-center justify-between px-0 lg:hidden"
           >
             <span className="flex items-center gap-2 text-sm font-medium">
               <SlidersHorizontal className="h-4 w-4" aria-hidden />
@@ -142,10 +146,11 @@ function OpportunitiesPage() {
               )}
             </span>
             <ChevronDown className={`h-4 w-4 transition-transform motion-reduce:transition-none ${filtersOpen ? "rotate-180" : ""}`} aria-hidden />
-          </button>
-          <div id="filtros-contenido" className={filtersOpen ? "mt-4 space-y-5 lg:mt-0" : "hidden space-y-5 lg:mt-0 lg:block"}>
+          </Button>
+          <div id="filtros-contenido" className={filtersOpen ? "mt-4 lg:mt-0 lg:space-y-5" : "hidden lg:mt-0 lg:block lg:space-y-5"}>
+          <FilterCategory title="Estado" count={1}>
           <fieldset className="space-y-1.5">
-            <legend className="text-sm font-medium">Estado</legend>
+            <legend className="sr-only text-sm font-medium lg:not-sr-only">Estado</legend>
             {(["abiertas", "cerradas", "todas"] as const).map((v) => (
               <label key={v} className="flex items-center gap-2 text-sm">
                 <input type="radio" name="estado" checked={(params.estado ?? "abiertas") === v} onChange={() => set({ estado: v === "abiertas" ? undefined : v })} />
@@ -153,11 +158,13 @@ function OpportunitiesPage() {
               </label>
             ))}
           </fieldset>
+          </FilterCategory>
           <MultiCheck legend="Objeto" options={OBJECT_TYPES.map((o) => ({ v: o, l: o }))} value={params.objeto ?? []} onChange={(v) => set({ objeto: v.length ? v : undefined })} />
           <MultiCheck legend="Rubro (segmento CUBSO)" options={(opts.data?.segments ?? []).map((s) => ({ v: s.code, l: s.title }))} value={params.rubro ?? []} onChange={(v) => set({ rubro: v.length ? v : undefined })} />
           <MultiCheck legend="Región" options={REGION_OPTIONS.map((o) => ({ v: o, l: o }))} value={params.region ?? []} onChange={(v) => set({ region: v.length ? v : undefined })} />
+          <FilterCategory title="Monto del procedimiento" count={Number(params.min != null) + Number(params.max != null) + Number(Boolean(params.moneda))}>
           <fieldset className="space-y-2">
-            <legend className="text-sm font-medium">Monto del procedimiento</legend>
+            <legend className="sr-only text-sm font-medium lg:not-sr-only">Monto del procedimiento</legend>
             <div className="grid grid-cols-2 gap-2">
               <div><Label htmlFor="min" className="text-xs">Mínimo</Label><Input id="min" type="number" min={0} defaultValue={params.min} onBlur={(e) => set({ min: e.target.value ? Number(e.target.value) : undefined })} /></div>
               <div><Label htmlFor="max" className="text-xs">Máximo</Label><Input id="max" type="number" min={0} defaultValue={params.max} onBlur={(e) => set({ max: e.target.value ? Number(e.target.value) : undefined })} /></div>
@@ -168,13 +175,16 @@ function OpportunitiesPage() {
             </select>
             <p className="text-xs text-muted-foreground">Sin conversión de moneda. Los procedimientos sin monto publicado no aparecen al filtrar por monto.</p>
           </fieldset>
+          </FilterCategory>
+          <FilterCategory title="Fecha de cierre (presentación de ofertas)" count={Number(Boolean(params.cierreDesde)) + Number(Boolean(params.cierreHasta))}>
           <fieldset className="space-y-2">
-            <legend className="text-sm font-medium">Fecha de cierre (presentación de ofertas)</legend>
+            <legend className="sr-only text-sm font-medium lg:not-sr-only">Fecha de cierre (presentación de ofertas)</legend>
             <Label htmlFor="cd" className="text-xs">Desde</Label>
             <Input id="cd" type="date" value={params.cierreDesde ?? ""} onChange={(e) => set({ cierreDesde: e.target.value || undefined })} />
             <Label htmlFor="ch" className="text-xs">Hasta</Label>
             <Input id="ch" type="date" value={params.cierreHasta ?? ""} onChange={(e) => set({ cierreHasta: e.target.value || undefined })} />
           </fieldset>
+          </FilterCategory>
           </div>
         </aside>
 
