@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Rules
+- Listing and opportunity detail share the reserved-amount notice component and pure presentation helpers — keeps legal copy and official search links consistent without changing source data.
 - Source adapters live in `src/lib/<source>.server.ts`; sync orchestration in `src/lib/sync.server.ts` — keeps each source independent and swappable.
 - Business rules (status, dates, amounts, RUC) are pure functions in `src/lib/tender-rules.ts` with tests — shared by sync, server and UI.
 - Catalog tables are written only by the service role during sync; users read them via RLS — no user can alter official data.
