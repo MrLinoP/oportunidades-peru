@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { analyzeTender, getTender, uploadTenderDocument } from "@/lib/tenders.functions";
 import { toast } from "sonner";
-import { formatDate, formatMoney, currencyDescription, formatStageRange } from "@/lib/tender-rules";
+import { formatDate, formatOpportunityMoney, currencyDescription, formatStageRange, officialOpportunitySearchUrl } from "@/lib/tender-rules";
+import { ReservedAmountNote } from "@/components/reserved-amount-note";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
 
 export const Route = createFileRoute("/_authenticated/oportunidades/$id")({
@@ -63,7 +64,7 @@ function DetailPage() {
         <h1 className="text-xl font-semibold leading-snug">{t.title}</h1>
         <p className="text-sm text-muted-foreground">{t.entity}</p>
         <div className="flex flex-wrap gap-2">
-          <Button asChild><a href={t.source_url ?? "https://prod4.seace.gob.pe/openegocio/#/buscar"} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" aria-hidden />Ver en fuente oficial</a></Button>
+          <Button asChild><a href={officialOpportunitySearchUrl(t.nomenclature ?? "")} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" aria-hidden />Ver en fuente oficial</a></Button>
           <SaveButton tenderId={t.id} saved={data.saved} size="default" />
           <Button variant="secondary" disabled={analyzing} onClick={analyze}><Sparkles className={`h-4 w-4 ${analyzing ? "animate-pulse" : ""}`} aria-hidden />{analyzing ? "Analizando…" : data.analysis ? "Volver a analizar" : "Analizar"}</Button>
           <Button variant="ghost" disabled={refreshing} onClick={async () => {
@@ -74,7 +75,7 @@ function DetailPage() {
         </div>
         {data.refreshError && <p role="alert" className="text-sm text-destructive">No pudimos consultar SEACE ahora ({data.refreshError}). Mostramos la última copia guardada.</p>}
         {sched?.changed && <p role="status" className="text-sm font-medium">El cronograma cambió desde la comprobación anterior.</p>}
-        <p className="text-xs text-muted-foreground">En el portal oficial, busca por la nomenclatura <strong>{t.nomenclature}</strong>.</p>
+        <p className="text-xs text-muted-foreground">Selecciona la primera opción que te aparezca en el listado</p>
       </header>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -91,7 +92,7 @@ function DetailPage() {
             <Field label="Objeto">{t.object_type}</Field>
             <Field label="Procedimiento">{t.procedure_type}</Field>
             <Field label="Modalidad">{t.selection_modality}</Field>
-            <Field label="Valor referencial (procedimiento)">{formatMoney(t.amount, t.currency)}</Field>
+            <Field label="Valor referencial (procedimiento)">{formatOpportunityMoney(t.amount, t.currency)}</Field>
             <Field label="Moneda">{currencyDescription(t.currency)}</Field>
             <Field label="Regiones (ubicación SEACE)">{t.regions.join(", ")}</Field>
             <Field label="Publicación">{formatDate(t.published_at)}</Field>
@@ -116,7 +117,7 @@ function DetailPage() {
                 <li key={i.id} className="border-b pb-3 last:border-0">
                   <p className="font-medium">Ítem {i.item_number}: {i.cubso_label ?? "Sin CUBSO"}</p>
                   <p className="text-muted-foreground">{i.description}</p>
-                  <p className="mt-1 text-xs">CUBSO {i.cubso_code ?? "—"} · Cantidad {i.quantity ?? "—"} {i.unit ?? ""} · Valor del ítem {formatMoney(i.amount, i.currency)} · {i.region}</p>
+                  <p className="mt-1 text-xs">CUBSO {i.cubso_code ?? "—"} · Cantidad {i.quantity ?? "—"} {i.unit ?? ""} · Valor del ítem {formatOpportunityMoney(i.amount, i.currency)} · {i.region}</p>
                 </li>
               ))}
             </ul>
@@ -144,6 +145,7 @@ function DetailPage() {
           <AnalysisPanel analysis={data.analysis} analyzing={analyzing} error={analyzeError} outdated={!!data.analysis && data.analysis.tender_version !== t.version} />
         </TabsContent>
       </Tabs>
+      <ReservedAmountNote />
     </article>
   );
 }

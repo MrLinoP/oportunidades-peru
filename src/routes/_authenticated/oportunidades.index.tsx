@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { searchSchema, searchTenders, suggestTenders, getFilterOptions, PAGE_SIZE, type SearchParams } from "@/lib/tenders.functions";
-import { OBJECT_TYPES, REGION_OPTIONS, formatDate, formatMoney, currencyLabel } from "@/lib/tender-rules";
+import { OBJECT_TYPES, REGION_OPTIONS, formatDate, formatOpportunityMoney, currencyLabel } from "@/lib/tender-rules";
+import { ReservedAmountNote } from "@/components/reserved-amount-note";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
 import { paginationPages } from "@/lib/pagination";
 
@@ -231,7 +232,7 @@ function OpportunitiesPage() {
                           <p className="mt-1 text-xs text-muted-foreground">{t.entity} · {t.nomenclature}</p>
                         </td>
                         <td className="p-3">{t.object_type}<p className="text-xs text-muted-foreground">{t.procedure_type}</p></td>
-                        <td className="whitespace-nowrap p-3">{formatMoney(t.amount, t.currency)}</td>
+                        <td className="p-3">{formatOpportunityMoney(t.amount, t.currency)}</td>
                         <td className="p-3 text-xs">{t.regions.join(", ") || "No informado"}</td>
                         <td className="whitespace-nowrap p-0 text-xs">
                           <div className="flex h-full flex-col divide-y">
@@ -253,7 +254,7 @@ function OpportunitiesPage() {
                     <Link to="/oportunidades/$id" params={{ id: t.id }} className="mt-2 block font-medium text-primary hover:underline">{t.title}</Link>
                     <p className="mt-1 text-xs text-muted-foreground">{t.entity}</p>
                     <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                      <div><dt className="text-muted-foreground">Monto</dt><dd>{formatMoney(t.amount, t.currency)}</dd></div>
+                      <div><dt className="text-muted-foreground">Monto</dt><dd>{formatOpportunityMoney(t.amount, t.currency)}</dd></div>
                       <div><dt className="text-muted-foreground">Publicación</dt><dd>{formatDate(t.published_at)}</dd></div>
                       <div><dt className="text-muted-foreground">Cierre</dt><dd>{formatDate(t.closing_at, t.closing_date_only)}</dd></div>
                       <div className="col-span-2"><dt className="text-muted-foreground">Región</dt><dd>{t.regions.join(", ")}</dd></div>
@@ -276,6 +277,7 @@ function OpportunitiesPage() {
           <p className="flex items-center gap-1 text-xs text-muted-foreground"><ExternalLink className="h-3 w-3" aria-hidden />Región = ubicación registrada por SEACE para cada ítem. Confirma el lugar de ejecución en las bases.</p>
         </section>
       </div>
+      <ReservedAmountNote />
     </div>
   );
 }
