@@ -105,6 +105,19 @@ export function formatMoney(amount: number | null, currency: string | null): str
 }
 
 const LIMA = { timeZone: "America/Lima" } as const;
+/** Presentation only: missing official amounts remain null in the catalogue. */
+export function formatOpportunityMoney(amount: number | null, currency: string | null): string {
+  if (amount !== null) return formatMoney(amount, currency);
+  const label = currencyLabel(currency);
+  return label ? `*Monto reservado (${label})` : "*Monto reservado";
+}
+
+export function officialOpportunitySearchUrl(nomenclature: string, now: Date = new Date()): string {
+  const year = new Intl.DateTimeFormat("en", { ...LIMA, year: "numeric" }).format(now);
+  const params = new URLSearchParams({ search: nomenclature, year });
+  return `https://contratacionesabiertas.oece.gob.pe/busqueda?${params}`;
+}
+
 export function formatDate(iso: string | null, dateOnly = false): string {
   if (!iso) return "No informado";
   const d = new Date(iso);

@@ -1,9 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { parseAmount, parseSeaceDate, tenderStatus, isValidRucSyntax, isStale, suggestionFacts, validSuggestionIds, formatMoney, currencyAliases, currencyDescription } from "./tender-rules";
+import { parseAmount, parseSeaceDate, tenderStatus, isValidRucSyntax, isStale, suggestionFacts, validSuggestionIds, formatMoney, currencyAliases, currencyDescription, officialOpportunitySearchUrl } from "./tender-rules";
 
 const now = new Date("2026-10-13T12:00:00Z");
 
 describe("tender rules", () => {
+  it("links the official search to the exact nomenclature and current year", () => {
+    expect(officialOpportunitySearchUrl("CP-ABR-4-2026-MPCH-1", now)).toBe("https://contratacionesabiertas.oece.gob.pe/busqueda?search=CP-ABR-4-2026-MPCH-1&year=2026");
+    const url = new URL(officialOpportunitySearchUrl("CP-ABR-63-2026-MGP/DIRCOMAR-1", new Date("2027-01-01T05:00:00Z")));
+    expect(url.searchParams.get("search")).toBe("CP-ABR-63-2026-MGP/DIRCOMAR-1");
+    expect(url.searchParams.get("year")).toBe("2027");
+  });
   it("formats every sol alias with S/ without changing the amount", () => {
     for (const currency of ["Soles", "Nuevos Soles", "PEN", "S/.", "S/"]) {
       expect(formatMoney(80000, currency)).toBe("S/ 80,000.00");
