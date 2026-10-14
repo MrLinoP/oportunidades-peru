@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { analyzeTender, getTender } from "@/lib/tenders.functions";
 import { toast } from "sonner";
-import { formatDate, formatMoney, currencyDescription } from "@/lib/tender-rules";
+import { formatDate, formatMoney, currencyDescription, formatStageRange } from "@/lib/tender-rules";
 import { FreshnessNote, SaveButton, StatusBadge } from "@/components/tender-ui";
 
 export const Route = createFileRoute("/_authenticated/oportunidades/$id")({
