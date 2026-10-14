@@ -34,9 +34,10 @@ export const searchTenders = createServerFn({ method: "POST" })
     if (data.suggestionIds) q = q.in("id", data.suggestionIds.length ? data.suggestionIds : ["00000000-0000-0000-0000-000000000000"]);
     const term = data.q?.replace(/[,()%*\\{}"]/g, " ").trim();
     if (term) {
-      q = q.or(`title.ilike.%${term}%,description.ilike.%${term}%,entity.ilike.%${term}%,nomenclature.ilike.%${term}%,object_type.ilike.%${term}%`);
+      let or = `title.ilike.%${term}%,description.ilike.%${term}%,entity.ilike.%${term}%,nomenclature.ilike.%${term}%,object_type.ilike.%${term}%`;
       const regionHits = REGION_OPTIONS.filter((r) => r.toLowerCase().includes(term.toLowerCase()));
-      if (regionHits.length) q = q.overlaps("regions", regionHits);
+      if (regionHits.length) or += `,regions.cs.{${regionHits.join(",")}}`;
+      q = q.or(or);
     }
     if (data.objeto?.length) q = q.in("object_type", data.objeto);
     if (data.rubro?.length) q = q.overlaps("cubso_segments", data.rubro);
