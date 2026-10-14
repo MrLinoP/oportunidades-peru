@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Rules
+- The authenticated layout shares one navigation list and sign-out handler between the mobile dropdown and desktop header — keeps destinations and session behavior consistent.
 - Listing and opportunity detail share the reserved-amount notice component and pure presentation helpers — keeps legal copy and official search links consistent without changing source data.
 - Source adapters live in `src/lib/<source>.server.ts`; sync orchestration in `src/lib/sync.server.ts` — keeps each source independent and swappable.
 - Business rules (status, dates, amounts, RUC) are pure functions in `src/lib/tender-rules.ts` with tests — shared by sync, server and UI.
