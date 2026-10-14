@@ -22,7 +22,7 @@ export const searchSchema = z.object({
 export type SearchParams = z.infer<typeof searchSchema>;
 
 const LIST_COLS = "id, source_id, nomenclature, title, entity, object_type, procedure_type, currency, amount, amount_level, published_at, participation_start, closing_at, closing_date_only, regions, cubso_labels, listed_in_source, last_checked_at";
-export const PAGE_SIZE = 25;
+export const PAGE_SIZE = 10;
 
 export const searchTenders = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
