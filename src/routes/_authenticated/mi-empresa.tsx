@@ -289,7 +289,7 @@ function ProfilePage() {
               <Textarea
                 id={k}
                 rows={12}
-                className="min-h-[10rem]"
+                className="!h-48 !min-h-48 resize-y"
                 value={(f[k] as string) ?? ""}
                 onChange={(e) => up(k, e.target.value)}
               />
