@@ -169,7 +169,7 @@ function OpportunitiesPage() {
             </div>
             <Label htmlFor="moneda" className="text-xs">Moneda</Label>
             <select id="moneda" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={params.moneda ?? ""} onChange={(e) => set({ moneda: e.target.value || undefined })}>
-              <option value="">Todas</option><option value="Soles">S/</option><option value="Dólares">US$</option>
+              <option value="">Todas</option><option value="Soles">Sol Peruano (S/)</option><option value="Dólares">Dólar estadounidense (USD $)</option>
             </select>
             <p className="text-xs text-muted-foreground">Sin conversión de moneda. Los procedimientos sin monto publicado no aparecen al filtrar por monto.</p>
           </fieldset>
@@ -196,7 +196,10 @@ function OpportunitiesPage() {
             </ul>
           )}
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-            <p aria-live="polite">{data ? `${data.total.toLocaleString("es-PE")} resultados` : "Cargando…"}{isFetching && data ? " · actualizando…" : ""}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p aria-live="polite">{data ? `${data.total.toLocaleString("es-PE")} resultados` : "Cargando…"}{isFetching && data ? " · actualizando…" : ""}</p>
+              {data?.lastOk && <FreshnessNote checked={data.lastOk.finished_at} />}
+            </div>
             <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:w-auto">
               <label className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">Ordenar por
                 <select className="h-8 min-w-0 rounded-md border bg-background px-2" value={params.orden ?? "cierre"} onChange={(e) => set({ orden: e.target.value === "cierre" ? undefined : "publicacion" })}>
@@ -248,8 +251,8 @@ function OpportunitiesPage() {
                             <div className="px-3 py-2"><span className="block text-[10px] font-semibold uppercase text-muted-foreground">Cierre</span>{formatDate(t.closing_at, t.closing_date_only)}</div>
                           </div>
                         </td>
-                        <td className="p-3"><StatusBadge t={t} /></td>
-                        <td className="p-3"><SaveButton tenderId={t.id} saved={t.saved} /></td>
+                        <td className="p-3 align-middle"><StatusBadge t={t} /></td>
+                        <td className="p-3 align-middle"><SaveButton tenderId={t.id} saved={t.saved} /></td>
                       </tr>
                     ))}
                   </tbody>
