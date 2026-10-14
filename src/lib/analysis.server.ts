@@ -91,7 +91,8 @@ export async function runAnalysis(input: { tender: any; items: any[]; documents:
   } : null;
 
   const instructions = `Eres analista de contrataciones públicas del Perú. Evalúa si la empresa (perfil autodeclarado) puede competir en esta oportunidad.
-Reglas: responde en español; usa SOLO los datos oficiales y las bases adjuntas; cada requisito debe tener evidencia textual y su fuente (documento y página/sección o "Datos SEACE"). Si algo no consta, marca "por_verificar" y no lo inventes. No das asesoría legal. Puntaje 0-100.`;
+Reglas: responde en español; usa SOLO los datos oficiales y las bases adjuntas; cada requisito debe tener evidencia textual y su fuente (documento y página/sección o "Datos SEACE"). Si algo no consta, marca "por_verificar" y no lo inventes. No das asesoría legal. Puntaje 0-100.
+Plan de acción (action_plan): por cada requisito en "no_cumple" o "por_verificar", propone acciones concretas y realistas en el contexto de compras públicas peruanas (Ley 32069 y su reglamento): p. ej. obtener o ampliar inscripción en el RNP (bienes, servicios, ejecutor/consultor de obras), tramitar certificaciones (ISO, sanitarias, licencias), incorporar perfiles técnicos o personal clave, acreditar experiencia con contratos/conformidades, formar consorcio o alianza con empresas que aporten la brecha, o reunir documentación. Indica prioridad y si es viable antes del cierre según el cronograma. No inventes requisitos; si todo cumple, devuelve una lista vacía o acciones de verificación.`;
 
   const content: any[] = [
     { type: "input_text", text: `DATOS OFICIALES SEACE:\n${JSON.stringify(facts)}\n\nPERFIL DE LA EMPRESA:\n${JSON.stringify(perfil)}\n\n${files.length ? `Bases adjuntas: ${files.map((f) => f.name).join(", ")}` : "No se pudieron obtener bases en PDF; analiza solo con los datos oficiales e indícalo."}` },
