@@ -104,8 +104,16 @@ function OpportunitiesPage() {
             Fuente: <a className="underline" href="https://prod4.seace.gob.pe/openegocio/#/buscar" target="_blank" rel="noreferrer">SEACE – Oportunidades de negocio</a> (bienes, servicios, obras y consultorías vigentes).
           </p>
         </div>
-        {data?.lastOk && <FreshnessNote checked={data.lastOk.finished_at} />}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={showSuggestions} disabled={suggesting || !!activeSuggestions} aria-busy={suggesting}>
+            {suggesting ? <LoaderCircle className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden /> : <Sparkles className="h-4 w-4" aria-hidden />}
+            {suggesting ? "Buscando sugerencias…" : "Mostrar sugerencias para mi"}
+          </Button>
+          {activeSuggestions && <Button variant="outline" onClick={() => { setSuggestions(null); set({ page: 1 }); }}>Ver todas las oportunidades</Button>}
+          {activeSuggestions && <span className="text-sm text-primary" role="status">Sugerencias para mi empresa · {activeSuggestions.ids.length} coincidencias</span>}
+        </div>
       </div>
+      {suggestionError && <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">{suggestionError} <Link to="/mi-empresa" className="underline">Mi empresa</Link></div>}
       {data?.lastSync?.status === "error" && (
         <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
           La última actualización desde SEACE falló. Mostramos la última copia real guardada{data.lastOk ? ` (${formatDate(data.lastOk.finished_at)})` : ""}.
@@ -117,16 +125,6 @@ function OpportunitiesPage() {
         <Input id="q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por título, entidad, nomenclatura, objeto o región" />
         <Button type="submit"><Search className="h-4 w-4" aria-hidden />Buscar</Button>
       </form>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={showSuggestions} disabled={suggesting || !!activeSuggestions} aria-busy={suggesting}>
-          {suggesting ? <LoaderCircle className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden /> : <Sparkles className="h-4 w-4" aria-hidden />}
-          {suggesting ? "Buscando sugerencias…" : "Mostrar sugerencias para mi"}
-        </Button>
-        {activeSuggestions && <Button variant="outline" onClick={() => { setSuggestions(null); set({ page: 1 }); }}>Ver todas las oportunidades</Button>}
-        {activeSuggestions && <span className="text-sm text-primary" role="status">Sugerencias para mi empresa · {activeSuggestions.ids.length} coincidencias</span>}
-      </div>
-      {suggestionError && <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">{suggestionError} <Link to="/mi-empresa" className="underline">Mi empresa</Link></div>}
 
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside aria-label="Filtros" className="min-w-0 rounded-lg border bg-card p-4">
@@ -171,7 +169,7 @@ function OpportunitiesPage() {
             </div>
             <Label htmlFor="moneda" className="text-xs">Moneda</Label>
             <select id="moneda" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={params.moneda ?? ""} onChange={(e) => set({ moneda: e.target.value || undefined })}>
-              <option value="">Todas</option><option value="Soles">S/</option><option value="Dólares">US$</option>
+              <option value="">Todas</option><option value="Soles">Sol Peruano (S/)</option><option value="Dólares">Dólar estadounidense (USD $)</option>
             </select>
             <p className="text-xs text-muted-foreground">Sin conversión de moneda. Los procedimientos sin monto publicado no aparecen al filtrar por monto.</p>
           </fieldset>
@@ -198,7 +196,10 @@ function OpportunitiesPage() {
             </ul>
           )}
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-            <p aria-live="polite">{data ? `${data.total.toLocaleString("es-PE")} resultados` : "Cargando…"}{isFetching && data ? " · actualizando…" : ""}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p aria-live="polite">{data ? `${data.total.toLocaleString("es-PE")} resultados` : "Cargando…"}{isFetching && data ? " · actualizando…" : ""}</p>
+              {data?.lastOk && <FreshnessNote checked={data.lastOk.finished_at} />}
+            </div>
             <div className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:w-auto">
               <label className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">Ordenar por
                 <select className="h-8 min-w-0 rounded-md border bg-background px-2" value={params.orden ?? "cierre"} onChange={(e) => set({ orden: e.target.value === "cierre" ? undefined : "publicacion" })}>
@@ -250,8 +251,8 @@ function OpportunitiesPage() {
                             <div className="px-3 py-2"><span className="block text-[10px] font-semibold uppercase text-muted-foreground">Cierre</span>{formatDate(t.closing_at, t.closing_date_only)}</div>
                           </div>
                         </td>
-                        <td className="p-3"><StatusBadge t={t} /></td>
-                        <td className="p-3"><SaveButton tenderId={t.id} saved={t.saved} /></td>
+                        <td className="p-3 align-middle"><StatusBadge t={t} /></td>
+                        <td className="p-3 align-middle"><SaveButton tenderId={t.id} saved={t.saved} /></td>
                       </tr>
                     ))}
                   </tbody>
