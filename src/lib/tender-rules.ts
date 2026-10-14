@@ -128,3 +128,16 @@ export function validSuggestionIds(ids: string[], candidates: { id: string }[]):
   const allowed = new Set(candidates.map((c) => c.id));
   return [...new Set(ids)].filter((id) => allowed.has(id));
 }
+
+/** Formats an official SEACE schedule stage without inventing or dropping dates/times. */
+export function formatStageRange(start?: string | null, end?: string | null, startTime?: string | null, endTime?: string | null): string {
+  const s = start?.trim() || "", e = end?.trim() || "", st = startTime?.trim() || "", et = endTime?.trim() || "";
+  const part = (d: string, t: string) => (d && t ? `${d}, ${t}` : d || t);
+  if (!s && !e) return [st, et].filter(Boolean).join(" – ") || "No informado";
+  if (!e || s === e || !s) {
+    const d = s || e;
+    if (st && et) return st === et ? `${d}, ${st}` : `${d} (${st} – ${et})`;
+    return part(d, st || et);
+  }
+  return `${part(s, st)} – ${part(e, et)}`;
+}

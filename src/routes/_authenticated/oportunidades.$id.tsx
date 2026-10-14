@@ -104,7 +104,7 @@ function DetailPage() {
               <h2 className="mb-3 font-semibold">Cronograma oficial</h2>
               <ol className="space-y-2 text-sm">
                 {sched.stages.map((s: any, i: number) => (
-                  <li key={i} className="flex flex-wrap justify-between gap-2 border-b pb-2 last:border-0"><span>{s.stage}</span><span className="text-muted-foreground">{s.start}{s.start_time ? ` ${s.start_time}` : ""} – {s.end}{s.end_time ? ` ${s.end_time}` : ""}</span></li>
+                  <li key={i} className="flex flex-wrap justify-between gap-2 border-b pb-2 last:border-0"><span>{s.stage}</span><span className="text-muted-foreground">{formatStageRange(s.start, s.end, s.start_time, s.end_time)}</span></li>
                 ))}
               </ol>
             </section>
